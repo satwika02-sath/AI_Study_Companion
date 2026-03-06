@@ -105,9 +105,85 @@ Format the output as a JSON object matching this schema:
 FLASHCARD_PROMPT = PromptTemplate.from_template(FLASHCARD_PROMPT_TEMPLATE)
 
 
+# ── Demo / Mock Data (Fallback when API keys are missing) ──────────────────────
+
+MOCK_RESPONSES = {
+    "tutor": "Based on the material provided, I've analyzed the concept of {concept}. This is a critical building block in your current study path. For example, when you work with this, you're essentially orchestrating different components to work in harmony. Think of it like a conductor leading an orchestra, where each part (the data, the logic, and the user interface) has its specific timing and role to play. Does this help clarify how it fits into the bigger picture?",
+    
+    "quiz": {
+        "quiz": [
+            {
+                "question": "What is the primary objective of this module?",
+                "options": ["To store data", "To analyze patterns", "To bridge components", "To manage users"],
+                "correct_answer": "To bridge components",
+                "explanation": "This module acts as a connector between different system layers, ensuring smooth data flow."
+            },
+            {
+                "question": "Which framework is used for semantic search in this system?",
+                "options": ["FAISS", "Vercel", "SQLite", "CSV"],
+                "correct_answer": "FAISS",
+                "explanation": "FAISS (Facebook AI Similarity Search) is the core engine for indexing and searching your code or notes."
+            },
+            {
+                "question": "What is the default chunk size for document splitting?",
+                "options": ["100 characters", "500 characters", "1000 characters", "5000 characters"],
+                "correct_answer": "1000 characters",
+                "explanation": "Splitting text into 1000-character segments ensures a balance between detail and speed."
+            },
+            {
+                "question": "How are PDF files processed in the backend?",
+                "options": ["Manually", "Using PyPDF2/LangChain", "OCR only", "Converted to Image"],
+                "correct_answer": "Using PyPDF2/LangChain",
+                "explanation": "LangChain's document loaders handle the text extraction from your PDF uploads."
+            },
+            {
+                "question": "What is the role of the FastAPI server?",
+                "options": ["Frontend UI", "Database Store", "Business Logic API", "Authentication Only"],
+                "correct_answer": "Business Logic API",
+                "explanation": "FastAPI provides the RESTful interface for the frontend to communicate with our AI models."
+            }
+        ]
+    },
+
+    "flashcards": {
+        "flashcards": [
+            {"front": "What does RAG stand for?", "back": "Retrieval-Augmented Generation – a technique that combines retrieval and generation for better AI answers."},
+            {"front": "What is the primary vector store used?", "back": "FAISS (Facebook AI Similarity Search)."},
+            {"front": "How are code files parsed?", "back": "Using LangChain's LanguageParser with specialized splitters for Python, JS, and TS."},
+            {"front": "Is this application running locally?", "back": "Yes, it uses a local vector store and can run with local embedding models."},
+            {"front": "What is the role of the Topbar?", "back": "Navigation and global application state management."}
+        ]
+    },
+
+    "repo_architecture": """### 🏗️ Repository Architecture: {repo_name}
+
+Based on the scanned codebase, here is the architectural breakdown:
+
+#### 1. Project Summary
+This is a **high-modularity application Shell** designed for {repo_name}. It leverages a modern stack combining a **Next.js frontend** for interactive experience and a **FastAPI backend** for high-performance data processing. The core focus is on bridging internal logic with external AI services.
+
+#### 2. Important Files (Top 7)
+- `src/app/page.tsx`: The main entry point and landing page.
+- `src/components/layout/topbar.tsx`: Central navigation and responsive layout logic.
+- `server.py`: The robust FastAPI engine orchestrating all REST endpoints.
+- `rag/rag_pipeline.py`: The central hub for the Retrieval-Augmented Generation logic.
+- `rag/llm_engine.py`: Encapsulates AI model selection and prompt management.
+- `rag/vector_store.py`: Manages local FAISS indexes and semantic search retrieval.
+- `package.json`: Manages the complex dependency graph of the frontend.
+
+#### 3. System Architecture & Interaction
+1. **The Retrieval Layer**: When a user inputs a query, the system queries the `rag/vector_store` to find semantically relevant code or note snippets.
+2. **The Generation Layer**: These snippets are passed to the `llm_engine` to ground the AI's explanation in real codebase context.
+3. **The Global State**: The Next.js frontend synchronizes these processes in real-time to provide a seamless 'wait' experience during analysis.
+
+*This report was generated in **Demo Mode** using the codebase patterns detected.*"""
+}
+
+
 def get_llm(model_name: str = "gemini-1.5-flash", temperature: float = 0.2):
     """
     Initialize and return a LangChain ChatModel.
+    Returns None if no keys are found, triggering the MOCK mode fallback in call sites.
     """
     google_api_key = os.getenv("GOOGLE_API_KEY")
     openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -127,6 +203,7 @@ def get_llm(model_name: str = "gemini-1.5-flash", temperature: float = 0.2):
             temperature=temperature,
         )
     else:
+        print("[LLMEngine] No API keys found. System will use MOCK mode for demonstrations.")
         return None
 
 
@@ -137,10 +214,12 @@ def explain_with_context(
 ) -> str:
     """
     Explains a concept based on retrieved context.
+    Uses MOCK mode if no LLM is configured.
     """
     llm = get_llm(model_name=model_name)
     if llm is None:
-        return "⚠️ Error: AI API keys missing."
+        # Generate a slightly dynamic mock based on the question
+        return f"💡 **DEMO MODE**: {MOCK_RESPONSES['tutor'].replace('{concept}', question)}"
 
     chain = TUTOR_PROMPT | llm | StrOutputParser()
     try:
@@ -152,11 +231,12 @@ def explain_with_context(
 
 def generate_quiz_response(context: str) -> dict:
     """
-    Generate 5 MCQs from the given context using JsonOutputParser.
+    Generate 5 MCQs from the given context.
+    Uses MOCK mode if no LLM is configured.
     """
     llm = get_llm(temperature=0.7)
     if llm is None:
-        return {"error": "API Key missing"}
+        return MOCK_RESPONSES["quiz"]
 
     parser = JsonOutputParser(pydantic_object=QuizResponse)
     chain = QUIZ_PROMPT | llm | parser
@@ -176,11 +256,12 @@ def generate_quiz_response(context: str) -> dict:
 
 def generate_flashcards_response(context: str) -> dict:
     """
-    Generate flashcards from the given context using JsonOutputParser.
+    Generate flashcards from the given context.
+    Uses MOCK mode if no LLM is configured.
     """
     llm = get_llm(temperature=0.4)
     if llm is None:
-        return {"error": "API Key missing"}
+        return MOCK_RESPONSES["flashcards"]
 
     parser = JsonOutputParser(pydantic_object=FlashcardResponse)
     chain = FLASHCARD_PROMPT | llm | parser

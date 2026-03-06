@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquare, UploadCloud, BrainCircuit, Layers, BookOpen, User } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UploadCloud, BrainCircuit, Layers, BookOpen, User, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 const navItems = [
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Upload Notes", href: "/upload", icon: UploadCloud },
+    { title: "Repo Explainer", href: "/analyze-repo", icon: Github },
     { title: "AI Tutor", href: "/chat", icon: MessageSquare },
     { title: "Quiz Generator", href: "/quiz", icon: BrainCircuit },
     { title: "Flashcards", href: "/flashcards", icon: Layers },

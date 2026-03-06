@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "AI Study Companion",
@@ -23,14 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} font-sans antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col relative`}
+        className={`antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col relative`}
       >
         <AIBackground />
         <div className="relative z-10 flex flex-col min-h-screen">
-            <Topbar />
-            <main className="flex-1 w-full flex flex-col pt-4 pb-12">
+          <Topbar />
+          <main className="flex-1 w-full flex flex-col pt-4 pb-12">
             {children}
-            </main>
+          </main>
         </div>
       </body>
     </html>
