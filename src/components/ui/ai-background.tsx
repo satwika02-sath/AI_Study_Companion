@@ -13,10 +13,10 @@ export function AIBackground() {
     if (!mounted) return null;
 
     return (
-        <div className="fixed inset-0 z-0 overflow-hidden bg-[#F8FAFC] pointer-events-none">
-            {/* Soft Animated Gradient Background */}
+        <div className="fixed inset-0 z-0 overflow-hidden bg-slate-50 pointer-events-none">
+            {/* Vibrant Animated Gradient Background for stronger glass effect */}
             <motion.div
-                className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-blue-100/50 blur-[120px]"
+                className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-blue-300/40 blur-[120px]"
                 animate={{
                     x: [0, 100, 0],
                     y: [0, 50, 0],
@@ -25,7 +25,7 @@ export function AIBackground() {
                 transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div
-                className="absolute top-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-slate-200/40 blur-[150px]"
+                className="absolute top-[10%] -right-[10%] w-[50%] h-[70%] rounded-full bg-purple-300/40 blur-[150px]"
                 animate={{
                     x: [0, -80, 0],
                     y: [0, 100, 0],
@@ -34,7 +34,7 @@ export function AIBackground() {
                 transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div
-                className="absolute -bottom-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-white/60 blur-[100px]"
+                className="absolute -bottom-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-cyan-300/30 blur-[120px]"
                 animate={{
                     x: [0, -50, 0],
                     y: [0, -50, 0],
@@ -43,7 +43,7 @@ export function AIBackground() {
             />
 
             {/* Neural Network SVG Lines Pattern */}
-            <div className="absolute inset-0 opacity-[0.15]">
+            <div className="absolute inset-0 opacity-[0.25]">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <pattern id="neural-net" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
