@@ -50,7 +50,7 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
 };
 
 export default function DashboardPage() {
@@ -88,17 +88,17 @@ export default function DashboardPage() {
                     <Link key={action.href} href={action.href} className="outline-none block h-full">
                         <motion.div
                             variants={itemVariants}
-                            whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                            className="group h-full bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col cursor-pointer"
+                            whileHover={{ y: -6, scale: 1.01, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+                            className="group h-full bg-white/70 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col cursor-pointer"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${action.bg} ${action.color} group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${action.bg} ${action.color} group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>
                                     <action.icon className="w-7 h-7" />
                                 </div>
 
                                 {/* Subtle arrow indicator that slides in on hover */}
                                 <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors duration-300">
-                                    <ArrowRight className="w-5 h-5 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
+                                    <ArrowRight className="w-5 h-5 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
                                 </div>
                             </div>
 

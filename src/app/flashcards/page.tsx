@@ -65,7 +65,7 @@ export default function FlashcardsPage() {
                     <p className="text-slate-500 mt-1">Topic: Deep Learning Fundamentals</p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm text-sm font-medium text-slate-600">
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm text-sm font-medium text-slate-600">
                     Card {currentIndex + 1} of {deck.length}
                 </div>
             </div>
@@ -92,12 +92,13 @@ export default function FlashcardsPage() {
                                 scale: 0.95
                             }}
                             transition={{
-                                duration: 0.4,
-                                ease: "circOut"
+                                type: "spring",
+                                stiffness: 260,
+                                damping: 20
                             }}
                             className={cn(
                                 "absolute inset-0 w-full h-full cursor-pointer touch-manipulation group",
-                                "shadow-[0_8px_40px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.12)] transition-shadow duration-500 rounded-[32px] sm:rounded-[40px] border border-slate-100/50 bg-white"
+                                "shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.12)] transition-shadow duration-500 rounded-[32px] sm:rounded-[40px] border border-white/50 bg-white/70 backdrop-blur-2xl"
                             )}
                             onClick={() => setIsFlipped(!isFlipped)}
                             style={{ transformStyle: "preserve-3d" }}
@@ -116,7 +117,7 @@ export default function FlashcardsPage() {
                                 {/* Flip Hint */}
                                 <div className="absolute top-8 right-8 flex items-center gap-2 text-slate-400 opacity-60 group-hover:opacity-100 transition-opacity">
                                     <span className="text-sm font-medium">Flip</span>
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center">
                                         <CornerUpRight className="w-4 h-4" />
                                     </div>
                                 </div>
@@ -125,8 +126,8 @@ export default function FlashcardsPage() {
                                 <h3 className={cn(
                                     "text-center leading-relaxed font-medium",
                                     isFlipped
-                                        ? "text-2xl sm:text-3xl text-slate-700 max-w-2xl"
-                                        : "text-3xl sm:text-4xl md:text-5xl text-slate-900 max-w-3xl"
+                                        ? "text-2xl sm:text-3xl text-slate-700 max-w-2xl font-normal leading-relaxed tracking-wide"
+                                        : "text-3xl sm:text-4xl md:text-5xl text-slate-900 max-w-3xl font-bold tracking-tight"
                                 )}>
                                     {isFlipped ? deck[currentIndex].back : deck[currentIndex].front}
                                 </h3>
@@ -137,11 +138,11 @@ export default function FlashcardsPage() {
                 </div>
 
                 {/* Navigation Controls */}
-                <div className="flex items-center gap-4 sm:gap-8 mt-12 bg-white px-6 py-4 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100">
+                <div className="flex items-center gap-4 sm:gap-8 mt-12 bg-white/60 backdrop-blur-md px-6 py-4 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/50">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="w-12 h-12 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                        className="w-12 h-12 rounded-full text-slate-500 hover:text-slate-900 hover:bg-white/50"
                         onClick={handlePrev}
                     >
                         <ArrowLeft className="w-6 h-6" />
@@ -152,7 +153,7 @@ export default function FlashcardsPage() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="w-10 h-10 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+                        className="w-10 h-10 rounded-full text-slate-400 hover:text-slate-900 hover:bg-white/50"
                         onClick={handleRestart}
                         title="Restart Deck"
                     >
@@ -164,7 +165,7 @@ export default function FlashcardsPage() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="w-12 h-12 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                        className="w-12 h-12 rounded-full text-slate-500 hover:text-slate-900 hover:bg-white/50"
                         onClick={handleNext}
                     >
                         <ArrowRight className="w-6 h-6" />

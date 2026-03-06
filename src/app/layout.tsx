@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -18,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 import { Topbar } from "@/components/layout/topbar";
+import { AIBackground } from "@/components/ui/ai-background";
 
 export default function RootLayout({
   children,
@@ -27,12 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground flex flex-col min-h-screen`}
+        className={`${inter.variable} font-sans antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col relative`}
       >
-        <Topbar />
-        <main className="flex-1 bg-muted/20 pb-12">
-          {children}
-        </main>
+        <AIBackground />
+        <div className="relative z-10 flex flex-col min-h-screen">
+            <Topbar />
+            <main className="flex-1 w-full flex flex-col pt-4 pb-12">
+            {children}
+            </main>
+        </div>
       </body>
     </html>
   );

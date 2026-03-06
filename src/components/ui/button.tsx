@@ -42,11 +42,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         };
 
         const variants = {
-            primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-            secondary: "bg-muted text-foreground hover:bg-muted/80",
+            primary: "bg-primary text-primary-foreground shadow-sm hover:shadow-[0_4px_14px_0_rgb(0,118,255,0.39)] hover:bg-primary/90",
+            secondary: "bg-muted text-foreground shadow-sm hover:bg-muted/80",
             outline: "border border-border bg-transparent hover:bg-muted text-foreground",
-            ghost: "bg-transparent text-foreground hover:bg-muted",
-            danger: "bg-red-500 text-white hover:bg-red-600",
+            ghost: "bg-transparent text-foreground hover:bg-muted hover:shadow-sm",
+            danger: "bg-red-500 text-white shadow-sm hover:shadow-[0_4px_14px_0_rgb(239,68,68,0.39)] hover:bg-red-600",
         };
 
         const sizes = {
@@ -60,10 +60,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             <motion.button
                 ref={setRefs}
                 onClick={handleClick}
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.02, y: -1, transition: { type: "spring", stiffness: 400, damping: 25 } }}
+                whileTap={{ scale: 0.96, y: 1 }}
                 className={cn(
-                    "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+                    "relative overflow-hidden inline-flex items-center justify-center rounded-xl font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
                     variants[variant],
                     sizes[size],
                     className

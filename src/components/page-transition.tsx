@@ -6,10 +6,10 @@ import { ReactNode } from "react";
 export function PageTransition({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className={className}
         >
             {children}

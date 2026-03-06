@@ -101,12 +101,12 @@ export default function UploadPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
             >
-                <Card className="border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+                <Card className="overflow-hidden">
                     <CardContent className="p-1">
                         <div
                             {...getRootProps()}
                             className={cn(
-                                "relative rounded-xl p-16 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ease-in-out border-2 border-dashed m-1 bg-slate-50/50 hover:bg-slate-50",
+                                "relative rounded-xl p-16 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ease-in-out border-2 border-dashed m-1 bg-white/40 hover:bg-white/60",
                                 isDragActive
                                     ? "border-primary bg-primary/5 scale-[0.98]"
                                     : "border-slate-200 hover:border-slate-300"
@@ -117,7 +117,7 @@ export default function UploadPage() {
                             <motion.div
                                 className={cn(
                                     "w-20 h-20 rounded-2xl flex items-center justify-center mb-6 transition-colors duration-300 shadow-sm",
-                                    isDragActive ? "bg-primary text-primary-foreground shadow-primary/20" : "bg-white text-primary border border-slate-100"
+                                    isDragActive ? "bg-primary text-primary-foreground shadow-primary/20" : "bg-white/80 text-primary border border-white/50"
                                 )}
                                 animate={{ y: isDragActive ? -10 : 0 }}
                             >
@@ -177,8 +177,8 @@ export default function UploadPage() {
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             layout
                                         >
-                                            <Card className="overflow-hidden border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] bg-white">
-                                                <div className="p-4 flex items-center gap-4 relative bg-white z-10">
+                                            <Card className="overflow-hidden">
+                                                <div className="p-4 flex items-center gap-4 relative z-10">
                                                     <div className={cn(
                                                         "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-sm",
                                                         fileObj.status === "success"
@@ -237,7 +237,6 @@ export default function UploadPage() {
                                                     )}
                                                 </div>
 
-                                                {/* Animated Progress Bar */}
                                                 <div className="h-1.5 w-full bg-slate-50 relative overflow-hidden">
                                                     <motion.div
                                                         className={cn(
@@ -246,7 +245,7 @@ export default function UploadPage() {
                                                         )}
                                                         initial={{ scaleX: 0 }}
                                                         animate={{ scaleX: fileObj.progress / 100 }}
-                                                        transition={{ ease: "linear", duration: 0.2 }}
+                                                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
                                                     />
                                                 </div>
                                             </Card>

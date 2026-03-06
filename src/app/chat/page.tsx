@@ -73,17 +73,17 @@ export default function ChatPage() {
             </div>
 
             {/* Chat Container */}
-            <Card className="flex-1 w-full flex flex-col bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-slate-100 overflow-hidden relative">
+            <Card className="flex-1 w-full flex flex-col overflow-hidden relative">
 
                 {/* Messages List */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scroll-smooth">
                     <AnimatePresence initial={false}>
                         {messages.map((message) => (
                             <motion.div
                                 key={message.id}
-                                initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                 className={`flex gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                             >
                                 {/* Avatar */}
@@ -104,7 +104,7 @@ export default function ChatPage() {
                                         "max-w-[85%] sm:max-w-[75%] px-5 py-4 text-[15px] leading-relaxed",
                                         message.role === "user"
                                             ? "bg-slate-100 text-slate-900 rounded-[24px] rounded-tr-[8px]"
-                                            : "bg-white border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] text-slate-800 rounded-[24px] rounded-tl-[8px] prose prose-slate prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-50 prose-pre:text-slate-800 prose-pre:border prose-pre:border-slate-100"
+                                            : "bg-white/60 backdrop-blur-md border border-white/50 shadow-[0_2px_10px_rgb(0,0,0,0.02)] text-slate-800 rounded-[24px] rounded-tl-[8px] prose prose-slate prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-50 prose-pre:text-slate-800 prose-pre:border prose-pre:border-slate-100"
                                     )}
                                 >
                                     {message.role === "assistant" ? (
@@ -121,15 +121,16 @@ export default function ChatPage() {
                         {/* Loading Indicator */}
                         {isLoading && (
                             <motion.div
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
                                 className="flex gap-4 flex-row"
                             >
                                 <div className="w-9 h-9 flex items-center justify-center shrink-0 shadow-sm bg-gradient-to-br from-blue-500 to-primary text-white rounded-[14px]">
                                     <Sparkles className="w-5 h-5" />
                                 </div>
-                                <div className="bg-white border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] rounded-[24px] rounded-tl-[8px] px-5 py-5 flex items-center gap-1.5 h-[52px]">
+                                <div className="bg-white/60 backdrop-blur-md border border-white/50 shadow-[0_2px_10px_rgb(0,0,0,0.02)] rounded-[24px] rounded-tl-[8px] px-5 py-5 flex items-center gap-1.5 h-[52px]">
                                     <motion.div
                                         animate={{ y: [0, -5, 0] }}
                                         transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
@@ -153,7 +154,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-white border-t border-slate-100 mb-2">
+                <div className="p-4 bg-white/40 backdrop-blur-md border-t border-white/50 mb-2 shadow-sm">
                     <div className="relative group max-w-3xl mx-auto flex items-end gap-2">
                         <Button variant="outline" size="icon" className="h-[52px] w-[52px] rounded-2xl shrink-0 text-slate-400 hover:text-slate-600 border-slate-200">
                             <FileText className="w-5 h-5" />

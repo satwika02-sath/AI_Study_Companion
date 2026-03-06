@@ -20,7 +20,7 @@ export function Topbar() {
     if (pathname === "/") return null;
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-border shadow-sm h-16">
+        <header className="sticky top-0 z-50 w-full bg-white/60 backdrop-blur-2xl border-b border-white/50 shadow-[0_4px_30px_rgb(0,0,0,0.03)] h-16">
             <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/dashboard" className="flex items-center space-x-2 mr-8">

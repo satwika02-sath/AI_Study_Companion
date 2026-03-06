@@ -131,7 +131,7 @@ export default function QuizPage() {
                         className="space-y-6 pt-4"
                     >
                         {[1, 2, 3].map((i) => (
-                            <Card key={`skel-${i}`} className="p-8 pt-10 rounded-[24px] border-slate-100/50 shadow-sm relative overflow-hidden bg-white/50">
+                            <Card key={`skel-${i}`} className="p-8 pt-10 relative overflow-hidden">
                                 <div className="absolute top-0 left-0 bg-slate-50 border-b border-r border-slate-100/50 px-4 py-2 rounded-br-2xl">
                                     <Skeleton className="w-20 h-3" />
                                 </div>
@@ -162,7 +162,7 @@ export default function QuizPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: qIndex * 0.15, duration: 0.5, ease: "easeOut" }}
                         >
-                            <Card className="bg-white border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300 p-8 pt-10 relative overflow-hidden rounded-[24px]">
+                            <Card className="transition-shadow duration-300 p-8 pt-10 relative overflow-hidden">
 
                                 {/* Question Number Badge */}
                                 <div className="absolute top-0 left-0 bg-slate-50 border-b border-r border-slate-100 px-4 py-2 rounded-br-2xl">
@@ -190,7 +190,7 @@ export default function QuizPage() {
                                                 whileTap={!showResults ? { scale: 0.99 } : {}}
                                                 className={cn(
                                                     "w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center justify-between group",
-                                                    !showResults && !isSelected && "border-slate-200 hover:border-primary/50 hover:bg-slate-50 text-slate-600 hover:text-slate-900",
+                                                    !showResults && !isSelected && "border-slate-200 hover:border-primary/50 hover:bg-white/50 text-slate-600 hover:text-slate-900",
                                                     !showResults && isSelected && "border-primary bg-primary/5 text-primary ring-1 ring-primary",
                                                     isCorrect && "border-green-500 bg-green-50 text-green-700 ring-1 ring-green-500",
                                                     isWrongSelection && "border-red-300 bg-red-50 text-red-600",
@@ -245,7 +245,7 @@ export default function QuizPage() {
                                     <motion.div
                                         initial={{ scale: 0.8, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
-                                        className="mb-6 p-6 bg-white border border-slate-100 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] inline-block"
+                                        className="mb-6 p-6 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] inline-block"
                                     >
                                         <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-1">Final Score</p>
                                         <p className="text-5xl font-black text-slate-900">
