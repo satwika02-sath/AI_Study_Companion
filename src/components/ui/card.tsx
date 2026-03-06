@@ -12,7 +12,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     ({ className, hoverable = false, ...props }, ref) => {
         const motionProps = hoverable
             ? {
-                whileHover: { y: -4, transition: { duration: 0.2 } },
+                whileHover: { y: -2, transition: { duration: 0.3 } },
             }
             : {};
 

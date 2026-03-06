@@ -1,110 +1,117 @@
 "use client";
 
 import { PageTransition } from "@/components/page-transition";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { UploadCloud, MessageSquare, BrainCircuit, Layers, Clock } from "lucide-react";
+import { UploadCloud, MessageSquare, BrainCircuit, Layers, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
-const quickLinks = [
+const dashboardActions = [
     {
         title: "Upload Notes",
-        description: "Add new PDF or text notes to your knowledge base.",
+        description: "Add PDFs or text notes to your personal knowledge base for the AI to analyze.",
         icon: UploadCloud,
         href: "/upload",
-        color: "bg-blue-500/10 text-blue-500",
+        color: "text-blue-600",
+        bg: "bg-blue-100",
     },
     {
-        title: "AI Tutor Chat",
-        description: "Ask questions and get explanations on any topic.",
+        title: "Ask AI Tutor",
+        description: "Chat with your intelligent tutor to get explanations, summaries, and help.",
         icon: MessageSquare,
         href: "/chat",
-        color: "bg-green-500/10 text-green-500",
+        color: "text-purple-600",
+        bg: "bg-purple-100",
     },
     {
-        title: "Quiz Generator",
-        description: "Test your knowledge with custom generated quizzes.",
+        title: "Generate Quiz",
+        description: "Test your retention by generating custom quizzes from your study material.",
         icon: BrainCircuit,
         href: "/quiz",
-        color: "bg-purple-500/10 text-purple-500",
+        color: "text-green-600",
+        bg: "bg-green-100",
     },
     {
         title: "Flashcards",
-        description: "Review concepts with spaced repetition flashcards.",
+        description: "Review core concepts using interactive, spaced-repetition flashcards.",
         icon: Layers,
         href: "/flashcards",
-        color: "bg-orange-500/10 text-orange-500",
+        color: "text-orange-600",
+        bg: "bg-orange-100",
     },
 ];
 
-const recentActivity = [
-    { id: 1, action: "Generated Quiz", topic: "Machine Learning Basics", time: "2 hours ago" },
-    { id: 2, action: "Uploaded Note", topic: "Chapter 4: Neural Networks", time: "Yesterday" },
-    { id: 3, action: "Chat Session", topic: "Explain Backpropagation", time: "2 days ago" },
-];
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
 
 export default function DashboardPage() {
     return (
-        <PageTransition className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+        <PageTransition className="p-6 md:p-12 max-w-7xl mx-auto space-y-10">
+
+            {/* Header */}
             <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight">Welcome back, Student</h2>
-                <p className="text-muted-foreground">Here is an overview of your study progress and quick actions.</p>
+                <motion.h2
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-4xl font-bold tracking-tight text-slate-900"
+                >
+                    Welcome back, Student
+                </motion.h2>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="text-lg text-slate-500"
+                >
+                    Select an action below to continue your smart learning journey.
+                </motion.p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {quickLinks.map((link) => (
-                    <Link key={link.href} href={link.href} className="outline-none">
-                        <Card hoverable className="h-full cursor-pointer border-transparent hover:border-border transition-colors group">
-                            <CardHeader>
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${link.color} group-hover:scale-110 transition-transform`}>
-                                    <link.icon className="w-6 h-6" />
+            {/* Grid of Actions */}
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+                {dashboardActions.map((action) => (
+                    <Link key={action.href} href={action.href} className="outline-none block h-full">
+                        <motion.div
+                            variants={itemVariants}
+                            whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                            className="group h-full bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col cursor-pointer"
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${action.bg} ${action.color} group-hover:scale-110 transition-transform duration-300`}>
+                                    <action.icon className="w-7 h-7" />
                                 </div>
-                                <CardTitle className="text-lg">{link.title}</CardTitle>
-                                <CardDescription className="line-clamp-2 mt-2">
-                                    {link.description}
-                                </CardDescription>
-                            </CardHeader>
-                        </Card>
+
+                                {/* Subtle arrow indicator that slides in on hover */}
+                                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-colors duration-300">
+                                    <ArrowRight className="w-5 h-5 -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300" />
+                                </div>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">{action.title}</h3>
+                            <p className="text-slate-500 leading-relaxed flex-1">
+                                {action.description}
+                            </p>
+
+                        </motion.div>
                     </Link>
                 ))}
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle>Study Progress Overview</CardTitle>
-                        <CardDescription>Your activity over the last 7 days.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px] flex items-center justify-center border-t border-border/50 bg-muted/10">
-                        {/* Placeholder for a chart */}
-                        <p className="text-muted-foreground text-sm">Chart visualization will appear here.</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent Activity</CardTitle>
-                        <CardDescription>Your latest interactions.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-6">
-                            {recentActivity.map((activity) => (
-                                <div key={activity.id} className="flex items-start gap-4">
-                                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                                        <Clock className="w-4 h-4 text-muted-foreground" />
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-sm font-medium leading-none">{activity.action}</p>
-                                        <p className="text-xs text-muted-foreground">{activity.topic}</p>
-                                        <p className="text-xs text-muted-foreground/60">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <Button variant="outline" className="w-full mt-6">View All Activity</Button>
-                    </CardContent>
-                </Card>
-            </div>
         </PageTransition>
     );
 }

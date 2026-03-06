@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, HTMLMotionProps } from "framer-motion";
-import React from "react";
+import { motion, HTMLMotionProps, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, MouseEvent } from "react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
@@ -11,7 +11,35 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", isLoading, children, ...props }, ref) => {
+    ({ className, variant = "primary", size = "md", isLoading, children, onClick, ...props }, ref) => {
+        const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
+        const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+        // Merge refs
+        const setRefs = (element: HTMLButtonElement) => {
+            buttonRef.current = element;
+            if (typeof ref === "function") ref(element);
+            else if (ref) ref.current = element;
+        };
+
+        const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
+            if (buttonRef.current && !isLoading && !props.disabled) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const newRipple = { x, y, id: Date.now() };
+                setRipples((prev) => [...prev, newRipple]);
+
+                setTimeout(() => {
+                    setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+                }, 600); // 600ms corresponds to animation duration
+            }
+
+            if (onClick) {
+                onClick(e);
+            }
+        };
 
         const variants = {
             primary: "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -24,17 +52,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         const sizes = {
             sm: "h-8 px-3 text-xs",
             md: "h-10 px-4 py-2",
-            lg: "h-12 px-8 text-lg text-lg",
+            lg: "h-12 px-8 text-lg",
             icon: "h-10 w-10 flex items-center justify-center",
         };
 
         return (
             <motion.button
-                ref={ref}
-                whileHover={{ scale: 1.02 }}
+                ref={setRefs}
+                onClick={handleClick}
+                whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 className={cn(
-                    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+                    "relative overflow-hidden inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
                     variants[variant],
                     sizes[size],
                     className
@@ -42,10 +71,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 disabled={isLoading || props.disabled}
                 {...(props as HTMLMotionProps<"button">)}
             >
-                {isLoading ? (
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                ) : null}
-                {children}
+                <AnimatePresence>
+                    {ripples.map((ripple) => (
+                        <motion.span
+                            key={ripple.id}
+                            initial={{ scale: 0, opacity: 0.35 }}
+                            animate={{ scale: 4, opacity: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className={cn(
+                                "absolute rounded-full bg-current pointer-events-none",
+                                // Adjust size based on button size to ensure ripple covers it
+                                "w-32 h-32 -ml-16 -mt-16"
+                            )}
+                            style={{
+                                left: ripple.x,
+                                top: ripple.y,
+                            }}
+                        />
+                    ))}
+                </AnimatePresence>
+
+                <span className="relative flex items-center justify-center z-10 w-full h-full pointer-events-none">
+                    {isLoading ? (
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : null}
+                    {children}
+                </span>
             </motion.button>
         );
     }

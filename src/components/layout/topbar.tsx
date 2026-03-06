@@ -1,41 +1,70 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Search, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LayoutDashboard, MessageSquare, UploadCloud, BrainCircuit, Layers, BookOpen, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+
+const navItems = [
+    { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { title: "Upload Notes", href: "/upload", icon: UploadCloud },
+    { title: "AI Tutor", href: "/chat", icon: MessageSquare },
+    { title: "Quiz Generator", href: "/quiz", icon: BrainCircuit },
+    { title: "Flashcards", href: "/flashcards", icon: Layers },
+];
 
 export function Topbar() {
     const pathname = usePathname();
 
-    // Hide topbar on landing page
     if (pathname === "/") return null;
 
-    // Derive page title from pathname
-    const title = pathname.split("/").filter(Boolean)[0] || "Dashboard";
-    const displayTitle = title.charAt(0).toUpperCase() + title.slice(1).replace("-", " ");
-
     return (
-        <header className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center justify-between px-6">
-            <div className="flex items-center">
-                <h1 className="text-xl font-semibold tracking-tight">{displayTitle}</h1>
-            </div>
+        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-border shadow-sm h-16">
+            <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+                {/* Logo */}
+                <Link href="/dashboard" className="flex items-center space-x-2 mr-8">
+                    <div className="bg-primary text-primary-foreground p-1.5 rounded-md">
+                        <BookOpen className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-lg tracking-tight hidden sm:inline-block">Study AI</span>
+                </Link>
 
-            <div className="flex items-center space-x-4">
-                <div className="relative hidden sm:block">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="h-9 w-64 rounded-md border border-input bg-muted/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    />
-                </div>
+                {/* Desktop Navigation */}
+                <nav className="hidden md:flex flex-1 items-center space-x-1">
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.href;
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={cn(
+                                    "relative flex items-center space-x-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                    isActive
+                                        ? "text-primary"
+                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                )}
+                            >
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="topbar-active"
+                                        className="absolute inset-0 bg-slate-100/80 rounded-md -z-10"
+                                        initial={false}
+                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    />
+                                )}
+                                <item.icon className="w-4 h-4" />
+                                <span>{item.title}</span>
+                            </Link>
+                        );
+                    })}
+                </nav>
 
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <Bell className="h-5 w-5" />
-                </Button>
-
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 cursor-pointer hover:bg-primary/20 transition-colors">
-                    <User className="h-4 w-4 text-primary" />
+                {/* User Profile */}
+                <div className="flex items-center ml-auto">
+                    <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 cursor-pointer hover:bg-slate-200 transition-colors">
+                        <User className="h-4 w-4 text-slate-600" />
+                    </div>
                 </div>
             </div>
         </header>
