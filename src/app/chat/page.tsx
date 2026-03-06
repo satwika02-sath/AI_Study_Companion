@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { PageTransition } from "@/components/page-transition";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, User, FileText, ArrowDown } from "lucide-react";
+import { Send, Sparkles, User, FileText } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
 import remarkGfm from "remark-gfm";
@@ -28,7 +28,6 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -39,26 +38,44 @@ export default function ChatPage() {
         scrollToBottom();
     }, [messages, isLoading]);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
-        const newMessage: Message = { id: Date.now().toString(), role: "user", content: input };
-        setMessages((prev) => [...prev, newMessage]);
+        const userMsg: Message = { id: Date.now().toString(), role: "user", content: input };
+        setMessages((prev) => [...prev, userMsg]);
         setInput("");
         setIsLoading(true);
 
-        // Simulate AI response stream
-        setTimeout(() => {
+        try {
+            const res = await fetch("/api/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question: input, k: 3 })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Failed to get response");
+
+            const aiMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: data.explanation
+            };
+            setMessages((prev) => [...prev, aiMsg]);
+        } catch (err) {
+            console.error(err);
             setMessages((prev) => [
                 ...prev,
                 {
                     id: (Date.now() + 1).toString(),
                     role: "assistant",
-                    content: "That's an excellent question! Let's break it down step by step:\n\n### 1. The Core Concept\nFirst, we need to understand the fundamental principles. When you look at how standard algorithms are structured, they often follow a specific pattern of execution.\n\n```python\ndef example_function(data):\n    # Here is a typical block of code\n    result = []\n    for item in data:\n        if item.is_valid():\n            result.append(item.process())\n    return result\n```\n\n### 2. Application\nNotice how the `is_valid()` check prevents unnecessary processing. This is a common optimization technique."
+                    content: "⚠️ I'm sorry, I couldn't connect to the AI Tutor backend. Please make sure the Python server is running."
                 }
             ]);
+        } finally {
             setIsLoading(false);
-        }, 2000);
+        }
     };
 
     return (
@@ -73,7 +90,7 @@ export default function ChatPage() {
             </div>
 
             {/* Chat Container */}
-            <Card className="flex-1 w-full flex flex-col overflow-hidden relative">
+            <Card className="flex-1 w-full flex flex-col overflow-hidden relative border-none shadow-premium-sm bg-white/40 backdrop-blur-sm">
 
                 {/* Messages List */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scroll-smooth">
@@ -89,7 +106,7 @@ export default function ChatPage() {
                                 {/* Avatar */}
                                 <div
                                     className={cn(
-                                        "w-9 h-9 flex items-center justify-center shrink-0 shadow-sm",
+                                        "w-9 h-9 flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-110",
                                         message.role === "user"
                                             ? "bg-slate-900 text-white rounded-[14px]"
                                             : "bg-gradient-to-br from-blue-500 to-primary text-white rounded-[14px]"
@@ -101,10 +118,10 @@ export default function ChatPage() {
                                 {/* Message Bubble */}
                                 <div
                                     className={cn(
-                                        "max-w-[85%] sm:max-w-[75%] px-5 py-4 text-[15px] leading-relaxed",
+                                        "max-w-[85%] sm:max-w-[75%] px-5 py-4 text-[15px] leading-relaxed shadow-sm",
                                         message.role === "user"
-                                            ? "bg-slate-100 text-slate-900 rounded-[24px] rounded-tr-[8px]"
-                                            : "bg-white/60 backdrop-blur-md border border-white/50 shadow-[0_2px_10px_rgb(0,0,0,0.02)] text-slate-800 rounded-[24px] rounded-tl-[8px] prose prose-slate prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-50 prose-pre:text-slate-800 prose-pre:border prose-pre:border-slate-100"
+                                            ? "bg-slate-100 text-slate-900 rounded-[24px] rounded-tr-[8px] border border-slate-200/50"
+                                            : "bg-white backdrop-blur-md border border-slate-100 text-slate-800 rounded-[24px] rounded-tl-[8px] prose prose-slate prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-slate-50 prose-pre:text-slate-800 prose-pre:border prose-pre:border-slate-100"
                                     )}
                                 >
                                     {message.role === "assistant" ? (
@@ -112,7 +129,7 @@ export default function ChatPage() {
                                             {message.content}
                                         </ReactMarkdown>
                                     ) : (
-                                        <p className="whitespace-pre-wrap">{message.content}</p>
+                                        <p className="whitespace-pre-wrap font-medium">{message.content}</p>
                                     )}
                                 </div>
                             </motion.div>
@@ -130,7 +147,7 @@ export default function ChatPage() {
                                 <div className="w-9 h-9 flex items-center justify-center shrink-0 shadow-sm bg-gradient-to-br from-blue-500 to-primary text-white rounded-[14px]">
                                     <Sparkles className="w-5 h-5" />
                                 </div>
-                                <div className="bg-white/60 backdrop-blur-md border border-white/50 shadow-[0_2px_10px_rgb(0,0,0,0.02)] rounded-[24px] rounded-tl-[8px] px-5 py-5 flex items-center gap-1.5 h-[52px]">
+                                <div className="bg-white/60 backdrop-blur-md border border-slate-100 shadow-sm rounded-[24px] rounded-tl-[8px] px-5 py-5 flex items-center gap-1.5 h-[52px]">
                                     <motion.div
                                         animate={{ y: [0, -5, 0] }}
                                         transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
@@ -154,9 +171,9 @@ export default function ChatPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-white/40 backdrop-blur-md border-t border-white/50 mb-2 shadow-sm">
+                <div className="p-4 bg-white/60 backdrop-blur-md border-t border-slate-100 mb-2">
                     <div className="relative group max-w-3xl mx-auto flex items-end gap-2">
-                        <Button variant="outline" size="icon" className="h-[52px] w-[52px] rounded-2xl shrink-0 text-slate-400 hover:text-slate-600 border-slate-200">
+                        <Button variant="outline" size="icon" className="h-[52px] w-[52px] rounded-2xl shrink-0 text-slate-400 hover:text-slate-600 border-slate-200 bg-white">
                             <FileText className="w-5 h-5" />
                         </Button>
 
@@ -182,7 +199,7 @@ export default function ChatPage() {
                                 size="icon"
                                 className={cn(
                                     "absolute right-1.5 bottom-1.5 h-[40px] w-[40px] rounded-xl transition-all shadow-sm",
-                                    input.trim() ? "bg-primary text-white hover:bg-slate-800" : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                    input.trim() ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-400 cursor-not-allowed"
                                 )}
                                 onClick={handleSend}
                                 disabled={isLoading || !input.trim()}
