@@ -16,6 +16,7 @@ import os
 from typing import List, Optional
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 
 # ---------------------------------------------------------------------------
@@ -29,17 +30,33 @@ _embedding_model: Optional[HuggingFaceEmbeddings] = None
 
 def get_embedding_model(
     model_name: str = DEFAULT_EMBEDDING_MODEL,
-) -> HuggingFaceEmbeddings:
+) -> any:  # Type can be HuggingFaceEmbeddings or OpenAIEmbeddings
     """
-    Return a cached HuggingFaceEmbeddings instance.
+    Return a cached embedding model instance.
+    Prioritizes OpenRouter API embeddings in production to save memory.
     """
     global _embedding_model
 
     if _embedding_model is None:
-        print(f"[EmbeddingGenerator] Initializing Local embeddings: '{model_name}' …")
-        _embedding_model = HuggingFaceEmbeddings(
-            model_name=model_name,
-        )
+        api_key = os.getenv("AI_API_KEY")
+        # If we have an API key and are on Render/Production, use OpenRouter embeddings
+        if api_key and os.getenv("RENDER"):
+            print("[EmbeddingGenerator] Initializing API embeddings via OpenRouter (text-embedding-3-small) …")
+            _embedding_model = OpenAIEmbeddings(
+                model="openai/text-embedding-3-small", # OpenRouter compatible
+                openai_api_key=api_key,
+                openai_api_base="https://openrouter.ai/api/v1"
+            )
+        else:
+            print(f"[EmbeddingGenerator] Initializing Local embeddings: '{model_name}' …")
+            try:
+                _embedding_model = HuggingFaceEmbeddings(
+                    model_name=model_name,
+                )
+            except ImportError:
+                print("[EmbeddingGenerator] ERROR: torch/sentence-transformers missing. Fallback to API required.")
+                raise RuntimeError("Local embeddings failed. Ensure torch is installed or provide AI_API_KEY.")
+        
         print("[EmbeddingGenerator] Model initialized successfully.")
 
     return _embedding_model
