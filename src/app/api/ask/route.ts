@@ -9,10 +9,14 @@ const RAG_BACKEND_URL = process.env.RAG_BACKEND_URL ?? "http://localhost:8000";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
+        const authHeader = req.headers.get("authorization");
 
         const backendRes = await fetch(`${RAG_BACKEND_URL}/ask`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                ...(authHeader ? { "Authorization": authHeader } : {})
+            },
             body: JSON.stringify(body),
         });
 

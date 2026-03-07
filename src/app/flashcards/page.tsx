@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, CornerUpRight, RotateCcw, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/context/toast-context";
+import { useAnalytics } from "@/context/analytics-context";
 
 export default function FlashcardsPage() {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,6 +16,9 @@ export default function FlashcardsPage() {
     const [topic, setTopic] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
     const [cards, setCards] = useState<{ front: string; back: string }[]>([]);
+    const { token } = useAuth();
+    const { addToast } = useToast();
+    const { trackFlashcard } = useAnalytics();
 
     const fetchFlashcards = async () => {
         if (!topic.trim()) return;
@@ -20,7 +26,10 @@ export default function FlashcardsPage() {
         try {
             const res = await fetch("/api/flashcards", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ topic, k: 5 })
             });
             const data = await res.json();
@@ -28,9 +37,14 @@ export default function FlashcardsPage() {
                 setCards(data.flashcards);
                 setCurrentIndex(0);
                 setIsFlipped(false);
+                addToast(`📚 ${data.flashcards.length} flashcards generated!`, 'success');
+                trackFlashcard();
+            } else {
+                addToast('❌ Could not generate flashcards. Try again.', 'error');
             }
         } catch (err) {
             console.error(err);
+            addToast('❌ Flashcard generation failed.', 'error');
         } finally {
             setIsGenerating(false);
         }
@@ -66,8 +80,8 @@ export default function FlashcardsPage() {
             {/* Header / Input Area */}
             <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 pt-4">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-slate-900 font-outfit">Flashcards</h2>
-                    <p className="text-slate-500 mt-1">Generate custom cards from your study notes.</p>
+                    <h2 className="text-3xl font-black tracking-tight text-slate-900 font-outfit">Flashcards</h2>
+                    <p className="text-slate-700 mt-1 font-bold">Generate custom cards from your study notes.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
@@ -76,7 +90,7 @@ export default function FlashcardsPage() {
                             value={topic}
                             onChange={(e) => setTopic(e.target.value)}
                             placeholder="Enter topic..."
-                            className="w-full h-11 px-5 rounded-full border border-slate-200 bg-white shadow-soft-sm focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:outline-none transition-all text-sm"
+                            className="w-full h-11 px-5 rounded-full border border-slate-200 bg-white shadow-soft-sm text-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:outline-none transition-all text-base font-bold placeholder:text-slate-400"
                             onKeyDown={(e) => e.key === "Enter" && fetchFlashcards()}
                         />
                     </div>
@@ -95,7 +109,7 @@ export default function FlashcardsPage() {
             <div className="flex-1 w-full flex flex-col items-center justify-center max-w-4xl mx-auto pb-12">
                 {cards.length > 0 ? (
                     <div className="w-full flex flex-col items-center">
-                        <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200 shadow-sm text-xs font-bold text-slate-500 mb-6 uppercase tracking-widest">
+                        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-300 shadow-sm text-xs font-black text-slate-600 mb-6 uppercase tracking-widest">
                             Card {currentIndex + 1} of {cards.length}
                         </div>
 
@@ -135,31 +149,31 @@ export default function FlashcardsPage() {
 
                                         {/* Labels */}
                                         <span className={cn(
-                                            "absolute top-8 left-10 text-xs font-black tracking-[0.2em] uppercase",
-                                            isFlipped ? "text-primary" : "text-slate-400"
+                                            "absolute top-8 left-10 text-[11px] font-black tracking-[0.2em] uppercase",
+                                            isFlipped ? "text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20" : "text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"
                                         )}>
                                             {isFlipped ? "Answer" : "Question"}
                                         </span>
 
                                         {/* Flip Hint */}
-                                        <div className="absolute top-8 right-10 flex items-center gap-3 text-slate-400 opacity-60 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-xs font-bold tracking-widest uppercase">Flip</span>
-                                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm">
-                                                <CornerUpRight className="w-4 h-4" />
+                                        <div className="absolute top-8 right-10 flex items-center gap-3 text-slate-700 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-xs font-black tracking-widest uppercase">Flip</span>
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-300">
+                                                <CornerUpRight className="w-5 h-5" />
                                             </div>
                                         </div>
 
                                         {/* Main Text */}
                                         <h3 className={cn(
-                                            "text-center leading-relaxed transition-all duration-300",
+                                            "text-center transition-all duration-300 px-6 sm:px-12",
                                             isFlipped
-                                                ? "text-xl sm:text-2xl md:text-3xl text-slate-700 max-w-2xl font-normal leading-relaxed tracking-wide"
-                                                : "text-3xl sm:text-4xl md:text-5xl text-slate-900 max-w-3xl font-bold tracking-tight"
+                                                ? "text-xl sm:text-2xl md:text-3xl text-slate-900 max-w-2xl font-bold leading-[1.6] tracking-tight"
+                                                : "text-3xl sm:text-4xl md:text-5xl text-slate-900 max-w-3xl font-black tracking-tighter leading-tight"
                                         )}>
                                             {isFlipped ? cards[currentIndex].back : cards[currentIndex].front}
                                         </h3>
 
-                                        <p className="absolute bottom-10 text-xs text-slate-400 font-medium opacity-60">Tap to reveal answer</p>
+                                        <p className="absolute bottom-10 text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] opacity-40">Tap to reveal answer</p>
                                     </div>
                                 </motion.div>
                             </AnimatePresence>

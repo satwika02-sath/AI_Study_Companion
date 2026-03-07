@@ -40,3 +40,11 @@ __pycache__/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Ignore temporary and user-specific directories
+repo_temp/
+tmp_debug_clone/
+uploads/
+faiss_index/mock-user/
+repo_index/mock-user/
+test_results.txt

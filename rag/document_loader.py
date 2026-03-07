@@ -9,11 +9,11 @@ import os
 from pathlib import Path
 from typing import List
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_core.documents import Document
 
 
-SUPPORTED_EXTENSIONS = {".pdf", ".txt"}
+SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".docx"}
 
 
 def load_document(file_path: str) -> List[Document]:
@@ -43,6 +43,8 @@ def load_document(file_path: str) -> List[Document]:
 
     if ext == ".pdf":
         loader = PyPDFLoader(str(path))
+    elif ext == ".docx":
+        loader = Docx2txtLoader(str(path))
     else:
         loader = TextLoader(str(path), encoding="utf-8")
 

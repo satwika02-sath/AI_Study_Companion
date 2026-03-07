@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
 
 interface RepoAnalysis {
     summary: string;
@@ -38,6 +39,7 @@ export default function AnalyzeRepoPage() {
     const [query, setQuery] = useState("");
     const [isQuerying, setIsQuerying] = useState(false);
     const [queryResult, setQueryResult] = useState<string | null>(null);
+    const { token } = useAuth();
 
     const startAnalysis = async () => {
         if (!repoUrl.trim()) return;
@@ -48,7 +50,10 @@ export default function AnalyzeRepoPage() {
         try {
             const res = await fetch("/api/analyze_repo", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ repo_url: repoUrl })
             });
 
@@ -70,9 +75,12 @@ export default function AnalyzeRepoPage() {
         if (!query.trim() || !analysis) return;
         setIsQuerying(true);
         try {
-            const res = await fetch("/api/query", {
+            const res = await fetch("/api/query_repo", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ question: query, k: 3 })
             });
             const data = await res.json();
@@ -114,7 +122,7 @@ export default function AnalyzeRepoPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="text-[18px] text-slate-500 font-medium leading-relaxed"
+                    className="text-[18px] text-slate-600 font-semibold leading-relaxed"
                 >
                     Paste a GitHub URL to automatically clone, index, and explain the architecture of the repository.
                     Search through the code with semantic queries.
@@ -130,7 +138,7 @@ export default function AnalyzeRepoPage() {
                                 value={repoUrl}
                                 onChange={(e) => setRepoUrl(e.target.value)}
                                 placeholder="https://github.com/username/repo"
-                                className="w-full h-16 bg-white border border-slate-200 rounded-[24px] pl-14 pr-6 text-[16px] focus:outline-none focus:ring-4 focus:ring-primary/5 transition-all shadow-premium-lg font-mono text-sm"
+                                className="w-full h-16 bg-white border border-slate-200 rounded-[24px] pl-14 pr-6 text-base focus:outline-none focus:bg-slate-50 focus:ring-4 focus:ring-primary/5 transition-all shadow-premium-lg font-mono font-bold text-slate-900 placeholder:text-slate-400"
                                 onKeyDown={(e) => e.key === "Enter" && startAnalysis()}
                             />
                         </div>
@@ -157,7 +165,7 @@ export default function AnalyzeRepoPage() {
                     >
                         <div className="relative">
                             <div className="w-24 h-24 rounded-[32px] bg-slate-100 flex items-center justify-center animate-pulse">
-                                <Terminal className="w-10 h-10 text-slate-300" />
+                                <Terminal className="w-10 h-10 text-slate-400" />
                             </div>
                             <div className="absolute -bottom-1 -right-1">
                                 <span className="flex h-5 w-5">
@@ -167,8 +175,8 @@ export default function AnalyzeRepoPage() {
                             </div>
                         </div>
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-bold text-slate-900">Scanning Repository</h3>
-                            <p className="text-sm text-slate-400 font-medium tracking-widest uppercase">Cloning • Parsing • Embedding • Analyzing</p>
+                            <h3 className="text-xl font-black text-slate-900">Scanning Repository</h3>
+                            <p className="text-sm text-slate-600 font-black tracking-widest uppercase">Cloning • Parsing • Embedding • Analyzing</p>
                         </div>
                     </motion.div>
                 ) : analysis ? (
@@ -185,9 +193,9 @@ export default function AnalyzeRepoPage() {
                                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                                         <Box className="w-5 h-5 text-blue-500" />
                                     </div>
-                                    <h3 className="font-black text-xs uppercase tracking-widest text-slate-400">Project Summary</h3>
+                                    <h3 className="font-black text-xs uppercase tracking-widest text-slate-500">Project Summary</h3>
                                 </div>
-                                <p className="text-[15px] leading-relaxed text-slate-700 font-medium">
+                                <p className="text-[15px] leading-relaxed text-slate-900 font-bold">
                                     {analysis.summary}
                                 </p>
                             </Card>
@@ -197,13 +205,13 @@ export default function AnalyzeRepoPage() {
                                     <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
                                         <FileCode className="w-5 h-5 text-indigo-500" />
                                     </div>
-                                    <h3 className="font-black text-xs uppercase tracking-widest text-slate-400">Important Files</h3>
+                                    <h3 className="font-black text-xs uppercase tracking-widest text-slate-600">Important Files</h3>
                                 </div>
                                 <div className="space-y-3">
                                     {analysis.important_files.map((file, i) => (
-                                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-50 shadow-sm group hover:border-indigo-200 transition-colors">
-                                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
-                                            <span className="text-xs font-mono font-bold text-slate-600 truncate">{file}</span>
+                                        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-100 shadow-sm group hover:border-indigo-200 transition-colors">
+                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+                                            <span className="text-xs font-mono font-black text-slate-900 truncate">{file}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -215,7 +223,7 @@ export default function AnalyzeRepoPage() {
                                         <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                                             <SearchCode className="w-5 h-5 text-white" />
                                         </div>
-                                        <h3 className="font-black text-xs uppercase tracking-widest text-white/50">Semantic Search</h3>
+                                        <h3 className="font-black text-xs uppercase tracking-widest text-white/70">Semantic Search</h3>
                                     </div>
                                     <Sparkles className="w-4 h-4 text-blue-400" />
                                 </div>
@@ -224,10 +232,10 @@ export default function AnalyzeRepoPage() {
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         placeholder="Ask about the code..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:bg-white/10 transition-all resize-none h-24"
+                                        className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white placeholder:text-white/60 focus:outline-none focus:bg-white/20 transition-all resize-none h-24 font-medium"
                                     />
                                     <Button
-                                        className="w-full h-12 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-bold text-xs uppercase tracking-widest"
+                                        className="w-full h-12 rounded-xl bg-white text-slate-900 hover:bg-slate-100 font-black text-xs uppercase tracking-widest"
                                         onClick={runQuery}
                                         disabled={isQuerying}
                                     >
@@ -239,14 +247,14 @@ export default function AnalyzeRepoPage() {
 
                         {/* Architecture Explanation */}
                         <div className="lg:col-span-2 space-y-8">
-                            <Card className="p-10 border-none shadow-premium-sm bg-white/80 backdrop-blur-xl rounded-[40px] prose prose-slate max-w-none prose-headings:font-outfit prose-headings:font-bold prose-pre:bg-slate-50 prose-pre:text-slate-900 prose-pre:border prose-pre:border-slate-100 pb-20">
+                            <Card className="p-10 border-none shadow-premium-sm bg-white/95 backdrop-blur-xl rounded-[40px] prose prose-slate max-w-none prose-headings:font-outfit prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-900 prose-p:font-medium prose-strong:text-slate-900 prose-code:text-indigo-600 prose-pre:bg-slate-50 prose-pre:text-slate-900 prose-pre:border prose-pre:border-slate-100 pb-20 text-slate-900">
                                 <div className="flex items-center gap-3 mb-10 not-prose">
                                     <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg">
                                         <Network className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-400">Architecture Report</h3>
-                                        <p className="text-xs font-bold text-slate-900 mt-0.5">{analysis.repo_url.split('/').pop()}</p>
+                                        <h3 className="font-black text-xs uppercase tracking-[0.2em] text-slate-500">Architecture Report</h3>
+                                        <p className="text-sm font-black text-slate-900 mt-0.5">{analysis.repo_url.split('/').pop()}</p>
                                     </div>
                                 </div>
 
@@ -269,7 +277,7 @@ export default function AnalyzeRepoPage() {
                                                 </div>
                                                 <h3 className="font-black text-xs uppercase tracking-widest text-indigo-300">Semantic Context</h3>
                                             </div>
-                                            <div className="prose prose-invert max-w-none text-indigo-100/90 text-sm prose-pre:bg-black/20 prose-pre:border-indigo-700/50">
+                                            <div className="prose prose-invert max-w-none text-indigo-50 text-sm prose-pre:bg-black/20 prose-pre:border-indigo-700/50">
                                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                                     {queryResult}
                                                 </ReactMarkdown>

@@ -12,9 +12,10 @@ Default model: sentence-transformers/all-MiniLM-L6-v2
   • ~80 MB model download on first use
 """
 
+import os
 from typing import List, Optional
 
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
 # ---------------------------------------------------------------------------
@@ -31,26 +32,15 @@ def get_embedding_model(
 ) -> HuggingFaceEmbeddings:
     """
     Return a cached HuggingFaceEmbeddings instance.
-
-    The model is downloaded once and reused for the lifetime of the process,
-    avoiding repeated disk I/O and model initialisation overhead.
-
-    Args:
-        model_name: HuggingFace model identifier (default: all-MiniLM-L6-v2).
-
-    Returns:
-        An initialised HuggingFaceEmbeddings object.
     """
     global _embedding_model
 
-    if _embedding_model is None or _embedding_model.model_name != model_name:
-        print(f"[EmbeddingGenerator] Loading embedding model: '{model_name}' …")
+    if _embedding_model is None:
+        print(f"[EmbeddingGenerator] Initializing Local embeddings: '{model_name}' …")
         _embedding_model = HuggingFaceEmbeddings(
             model_name=model_name,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
         )
-        print("[EmbeddingGenerator] Model loaded successfully.")
+        print("[EmbeddingGenerator] Model initialized successfully.")
 
     return _embedding_model
 

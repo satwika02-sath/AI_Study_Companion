@@ -9,16 +9,17 @@ Model: gemini-1.5-flash (default) or gpt-4o-mini
 """
 
 import os
-from pydantic import BaseModel, Field
+import asyncio
+import time
 from typing import List, Optional
-from dotenv import load_dotenv
-
-from langchain_google_genai import ChatGoogleGenerativeAI
+from functools import wraps
+from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from dotenv import load_dotenv
 
-# Load environment variables (API keys)
+# Load environment variables
 load_dotenv()
 
 # ─── Pydantic Models for Structured Output ────────────────────────────────────
@@ -180,37 +181,87 @@ This is a **high-modularity application Shell** designed for {repo_name}. It lev
 }
 
 
-def get_llm(model_name: str = "gemini-1.5-flash", temperature: float = 0.2):
+# ─── Robust AI Request Wrapper ───────────────────────────────────────────────
+
+def with_retry(max_retries: int = 3, initial_delay: float = 1.0):
+    """
+    Decorator for adding exponential backoff and error handling to AI calls.
+    Handles 429 (Resource Exhausted) with retries.
+    Handles 401, 403 by logging and raising specific errors.
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            delay = initial_delay
+            last_err = None
+            
+            for attempt in range(max_retries + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    err_msg = str(e)
+                    last_err = e
+                    
+                    if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                        if attempt < max_retries:
+                            print(f"[LLMEngine] Quota Exceeded (429). Retrying in {delay}s... (Attempt {attempt+1}/{max_retries})")
+                            await asyncio.sleep(delay)
+                            delay *= 2  # Exponential backoff
+                            continue
+                    
+                    if "401" in err_msg or "invalid_api_key" in err_msg.lower():
+                        print("[LLMEngine] CRITICAL: Invalid API Key (401).")
+                    elif "403" in err_msg:
+                        print("[LLMEngine] CRITICAL: Unauthorized access (403).")
+                    
+                    # Rethrow for logic handling in agents
+                    raise last_err
+            raise last_err
+        return wrapper
+    return decorator
+
+# ─── Global LLM Cache ────────────────────────────────────────────────────────
+_llm_cache = {}
+
+def get_llm(model_name: Optional[str] = None, temperature: float = 0.2):
     """
     Initialize and return a LangChain ChatModel.
-    Returns None if no keys are found, triggering the MOCK mode fallback in call sites.
+    Standardized to use AI_API_KEY and OPENROUTER_MODEL from environment.
     """
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-    openai_api_key = os.getenv("OPENAI_API_KEY")
+    # Prioritize: argument > env var > hardcoded default
+    if not model_name:
+        model_name = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-lite-preview-02-05:free")
+    
+    cache_key = (model_name, temperature)
+    if cache_key in _llm_cache:
+        return _llm_cache[cache_key]
 
-    if google_api_key:
-        print(f"[LLMEngine] Using Google Gemini model: {model_name}")
-        return ChatGoogleGenerativeAI(
-            model=model_name,
-            google_api_key=google_api_key,
-            temperature=temperature,
-        )
-    elif openai_api_key:
-        print(f"[LLMEngine] Using OpenAI model: gpt-4o-mini")
-        return ChatOpenAI(
-            model="gpt-4o-mini",
-            openai_api_key=openai_api_key,
-            temperature=temperature,
-        )
-    else:
-        print("[LLMEngine] No API keys found. System will use MOCK mode for demonstrations.")
-        return None
+    api_key = os.getenv("AI_API_KEY")
+    
+    if not api_key:
+        print("[LLMEngine] FATAL: Missing AI_API_KEY environment variable.")
+        raise RuntimeError("AI_API_KEY missing from environment. Application cannot start AI services.")
 
+    print(f"[LLMEngine] Initializing OpenRouter model: {model_name}")
+    llm = ChatOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+        model=model_name,
+        temperature=temperature,
+    )
+    
+    _llm_cache[cache_key] = llm
+    return llm
+
+
+# Note: The functions below are legacy wrappers. 
+# The application now primarily uses the Multi-Agent System in rag/agents.py
+# which calls get_llm() directly with AI_API_KEY.
 
 def explain_with_context(
     question: str, 
     context: str, 
-    model_name: str = "gemini-1.5-flash"
+    model_name: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
 ) -> str:
     """
     Explains a concept based on retrieved context.

@@ -29,21 +29,35 @@ DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 # Note: FAISS doesn't support multiple "collections" in one folder easily 
 # like Chroma. We'll treat the folder as the single store.
 
+# ─── Global Vector Store Cache ───────────────────────────────────────────────
+_vector_store_cache = {}
+
 def _get_vector_store(
     persist_directory: str = DEFAULT_PERSIST_DIR,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    user_id: Optional[str] = None,
 ) -> Optional[FAISS]:
     """
-    Load the FAISS index from disk. Returns None if no index exists yet.
+    Load the FAISS index from disk or return from cache.
     """
+    if user_id:
+        persist_directory = os.path.join(persist_directory, user_id)
+    
+    cache_key = (persist_directory, embedding_model)
+    if cache_key in _vector_store_cache:
+        return _vector_store_cache[cache_key]
+
     embeddings = get_embedding_model(embedding_model)
     
     if os.path.exists(persist_directory) and os.path.exists(os.path.join(persist_directory, "index.faiss")):
-        return FAISS.load_local(
+        print(f"[VectorStore] Loading FAISS index from '{persist_directory}' ...")
+        store = FAISS.load_local(
             persist_directory, 
             embeddings, 
             allow_dangerous_deserialization=True
         )
+        _vector_store_cache[cache_key] = store
+        return store
     return None
 
 
@@ -51,11 +65,14 @@ def add_documents(
     chunks: List[Document],
     persist_directory: str = DEFAULT_PERSIST_DIR,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    user_id: Optional[str] = None,
 ) -> int:
     """
     Embed and store document chunks in FAISS index.
     If an index already exists, it is merged with the new chunks.
     """
+    if user_id:
+        persist_directory = os.path.join(persist_directory, user_id)
     if not chunks:
         print("[VectorStore] No chunks to store.")
         return 0
@@ -63,7 +80,7 @@ def add_documents(
     embeddings = get_embedding_model(embedding_model)
     
     # Try to load existing
-    store = _get_vector_store(persist_directory, embedding_model)
+    store = _get_vector_store(persist_directory, embedding_model, user_id=None) # Directory already adjusted
     
     if store is None:
         # Create new
@@ -76,6 +93,10 @@ def add_documents(
     Path(persist_directory).mkdir(parents=True, exist_ok=True)
     store.save_local(persist_directory)
 
+    # Update cache
+    cache_key = (persist_directory, embedding_model)
+    _vector_store_cache[cache_key] = store
+
     print(f"[VectorStore] Stored/updated {len(chunks)} chunk(s) in '{persist_directory}'")
     return len(chunks)
 
@@ -86,11 +107,15 @@ def similarity_search(
     persist_directory: str = DEFAULT_PERSIST_DIR,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
     source_filter: Optional[str] = None,
+    user_id: Optional[str] = None,
 ) -> List[Document]:
     """
     Retrieve the top-k most relevant chunks.
     """
-    store = _get_vector_store(persist_directory, embedding_model)
+    if user_id:
+        persist_directory = os.path.join(persist_directory, user_id)
+
+    store = _get_vector_store(persist_directory, embedding_model, user_id=None)
     
     if store is None:
         print("[VectorStore] Index not found. Returning empty results.")
@@ -116,16 +141,15 @@ def delete_document(
     source_file: str,
     persist_directory: str = DEFAULT_PERSIST_DIR,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    user_id: Optional[str] = None,
 ) -> None:
     """
     Delete all chunks of a document. 
-    Note: FAISS index deletion usually requires rebuilding the index 
-    without the filtered docs, but 'langchain-community' FAISS 
-    store has 'delete' if IDs are known. 
-    Since we don't store deterministic IDs easily with FAISS default, 
-    we'll filter and recreate (standard practice for local FAISS).
     """
-    store = _get_vector_store(persist_directory, embedding_model)
+    if user_id:
+        persist_directory = os.path.join(persist_directory, user_id)
+
+    store = _get_vector_store(persist_directory, embedding_model, user_id=None)
     if store is None:
         return
 
@@ -146,11 +170,15 @@ def delete_document(
 def get_collection_stats(
     persist_directory: str = DEFAULT_PERSIST_DIR,
     embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    user_id: Optional[str] = None,
 ) -> dict:
     """
     Return FAISS index stats.
     """
-    store = _get_vector_store(persist_directory, embedding_model)
+    if user_id:
+        persist_directory = os.path.join(persist_directory, user_id)
+
+    store = _get_vector_store(persist_directory, embedding_model, user_id=None)
     count = 0
     unique_files = set()
     

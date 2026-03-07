@@ -56,3 +56,22 @@ body {
 html {
   scroll-behavior: smooth;
 }
+/* Performance optimizations for glassmorphism */
+.backdrop-blur-md, 
+.backdrop-blur-xl, 
+.backdrop-blur-2xl {
+  will-change: backdrop-filter;
+  transform: translateZ(0); /* Force GPU layer */
+}
+
+/* Improve placeholder visibility */
+::placeholder {
+  color: #64748b !important; /* slate-500 equivalent */
+  opacity: 0.9 !important;
+}
+
+input::placeholder, 
+textarea::placeholder {
+  color: #64748b !important;
+  opacity: 0.9 !important;
+}

@@ -8,7 +8,12 @@ export const metadata: Metadata = {
 };
 
 import { Topbar } from "@/components/layout/topbar";
-import { AIBackground } from "@/components/ui/ai-background";
+import { ClientBackground } from "@/components/ui/client-background";
+import { AuthProvider } from "@/components/auth-provider";
+import { ToastProvider } from "@/context/toast-context";
+import { ToastContainer } from "@/components/ui/toast-container";
+import { PlanProvider } from "@/context/plan-context";
+import { AnalyticsProvider } from "@/context/analytics-context";
 
 export default function RootLayout({
   children,
@@ -20,13 +25,22 @@ export default function RootLayout({
       <body
         className={`antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col relative`}
       >
-        <AIBackground />
-        <div className="relative z-10 flex flex-col min-h-screen">
-          <Topbar />
-          <main className="flex-1 w-full flex flex-col pt-4 pb-12">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <ToastProvider>
+            <PlanProvider>
+              <AnalyticsProvider>
+                <ClientBackground />
+                <div className="relative z-10 flex flex-col min-h-screen">
+                  <Topbar />
+                  <main className="flex-1 w-full flex flex-col pt-4 pb-12">
+                    {children}
+                  </main>
+                </div>
+                <ToastContainer />
+              </AnalyticsProvider>
+            </PlanProvider>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

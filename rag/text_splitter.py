@@ -78,7 +78,7 @@ def split_documents(
         chunk.metadata["chunk_index"] = idx
 
     print(
-        f"[TextSplitter] Split {len(documents)} document(s) → "
+        f"[TextSplitter] Split {len(documents)} document(s) -> "
         f"{len(chunks)} chunk(s) "
         f"(size={chunk_size}, overlap={chunk_overlap})"
     )

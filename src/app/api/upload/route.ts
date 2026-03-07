@@ -10,10 +10,13 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
 
-    // Forward the exact same multipart form to the Python server
+    const authHeader = req.headers.get("authorization");
+
+    // Forward the exact same multipart form to the Python server, including Auth
     const backendRes = await fetch(`${RAG_BACKEND_URL}/upload`, {
       method: "POST",
       body: formData,
+      headers: authHeader ? { "Authorization": authHeader } : {},
     });
 
     const data = await backendRes.json();

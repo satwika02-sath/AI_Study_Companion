@@ -1,9 +1,11 @@
 "use client";
 
 import { PageTransition } from "@/components/page-transition";
-import { UploadCloud, MessageSquare, BrainCircuit, Layers, ArrowRight } from "lucide-react";
+import { UploadCloud, MessageSquare, BrainCircuit, Layers, ArrowRight, Users, BarChart2, Crown } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useAuth } from "@/components/auth-provider";
+import { usePlan } from "@/context/plan-context";
 
 const dashboardActions = [
     {
@@ -38,6 +40,30 @@ const dashboardActions = [
         color: "text-orange-600",
         bg: "bg-orange-100",
     },
+    {
+        title: "Team Collaboration",
+        description: "Invite collaborators to access and study shared notes together.",
+        icon: Users,
+        href: "/team",
+        color: "text-violet-600",
+        bg: "bg-violet-100",
+    },
+    {
+        title: "Analytics",
+        description: "Track your study activity, AI usage, and learning progress over time.",
+        icon: BarChart2,
+        href: "/analytics",
+        color: "text-indigo-600",
+        bg: "bg-indigo-100",
+    },
+    {
+        title: "Upgrade Plan",
+        description: "Unlock unlimited AI questions, quizzes, and team collaboration with Pro.",
+        icon: Crown,
+        href: "/pricing",
+        color: "text-amber-600",
+        bg: "bg-amber-100",
+    },
 ];
 
 const containerVariants = {
@@ -54,6 +80,8 @@ const itemVariants = {
 };
 
 export default function DashboardPage() {
+    const { user } = useAuth();
+
     return (
         <PageTransition className="p-6 md:p-12 max-w-7xl mx-auto space-y-10">
 
@@ -65,13 +93,13 @@ export default function DashboardPage() {
                     transition={{ duration: 0.5 }}
                     className="text-4xl font-bold tracking-tight text-slate-900"
                 >
-                    Welcome back, Student
+                    Welcome back, {user?.displayName?.split(' ')[0] || "Student"}
                 </motion.h2>
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
-                    className="text-lg text-slate-500"
+                    className="text-lg text-slate-600 font-medium"
                 >
                     Select an action below to continue your smart learning journey.
                 </motion.p>
@@ -89,7 +117,7 @@ export default function DashboardPage() {
                         <motion.div
                             variants={itemVariants}
                             whileHover={{ y: -6, scale: 1.01, transition: { type: "spring", stiffness: 400, damping: 25 } }}
-                            className="group h-full bg-white/70 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] transition-shadow duration-300 flex flex-col cursor-pointer"
+                            className="group h-full bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.15)] transition-all duration-300 flex flex-col cursor-pointer"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${action.bg} ${action.color} group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300`}>
@@ -103,7 +131,7 @@ export default function DashboardPage() {
                             </div>
 
                             <h3 className="text-xl font-bold text-slate-900 mb-2">{action.title}</h3>
-                            <p className="text-slate-500 leading-relaxed flex-1">
+                            <p className="text-slate-600 leading-relaxed font-medium flex-1">
                                 {action.description}
                             </p>
 

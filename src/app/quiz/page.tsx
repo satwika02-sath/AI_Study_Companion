@@ -8,6 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BrainCircuit, CheckCircle2, History, Settings2, PlayCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth-provider";
+import { useToast } from "@/context/toast-context";
+import { useAnalytics } from "@/context/analytics-context";
 
 type Question = {
     id: number;
@@ -23,6 +26,9 @@ export default function QuizPage() {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
     const [showResults, setShowResults] = useState(false);
+    const { token } = useAuth();
+    const { addToast } = useToast();
+    const { trackQuiz } = useAnalytics();
 
     const startGeneration = async () => {
         if (!topic.trim()) return;
@@ -34,7 +40,10 @@ export default function QuizPage() {
         try {
             const res = await fetch("/api/quiz", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ topic, k: 5 })
             });
 
@@ -53,9 +62,14 @@ export default function QuizPage() {
                     };
                 });
                 setQuestions(mappedQuestions);
+                addToast(`🧠 Quiz generated with ${mappedQuestions.length} questions!`, 'success');
+                trackQuiz();
+            } else {
+                addToast('❌ Could not generate quiz. Try again.', 'error');
             }
         } catch (err) {
             console.error(err);
+            addToast('❌ Quiz generation failed.', 'error');
         } finally {
             setIsGenerating(false);
         }
@@ -86,7 +100,7 @@ export default function QuizPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-slate-200 pb-8 pt-4">
                 <div className="flex-1">
                     <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-3 font-outfit">AI Quiz Generator</h2>
-                    <p className="text-[17px] text-slate-500 max-w-xl leading-relaxed font-medium">
+                    <p className="text-[17px] text-slate-700 max-w-xl leading-relaxed font-black">
                         Test your knowledge. Enter a topic to construct a personalized assessment based on your study materials.
                     </p>
                     <div className="mt-8 flex gap-3 max-w-lg">
@@ -95,7 +109,7 @@ export default function QuizPage() {
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
                                 placeholder="e.g. History of ML, Chapter 2 of Biology..."
-                                className="w-full h-14 relative bg-slate-50 border border-slate-200 rounded-[18px] pl-5 pr-5 text-[15px] focus:outline-none focus:bg-white focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-premium-sm"
+                                className="w-full h-14 relative bg-slate-50 border border-slate-200 rounded-[18px] pl-5 pr-5 text-base font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all shadow-premium-sm placeholder:text-slate-400"
                                 onKeyDown={(e) => e.key === "Enter" && startGeneration()}
                             />
                         </div>
@@ -157,13 +171,13 @@ export default function QuizPage() {
                                 showResults ? "bg-white/90" : "bg-white/60 hover:shadow-soft-lg group"
                             )}>
                                 {/* Number Badge */}
-                                <div className="absolute top-0 left-0 bg-slate-50 border-b border-r border-slate-100 px-5 py-2.5 rounded-br-2xl">
-                                    <span className="text-[11px] font-black tracking-widest text-slate-400 uppercase">
+                                <div className="absolute top-0 left-0 bg-slate-100 border-b border-r border-slate-200 px-5 py-2.5 rounded-br-2xl">
+                                    <span className="text-[11px] font-black tracking-widest text-slate-600 uppercase">
                                         Question {qIndex + 1}
                                     </span>
                                 </div>
 
-                                <h3 className="text-[22px] font-bold text-slate-900 mb-8 leading-relaxed font-outfit">
+                                <h3 className="text-[22px] font-black text-slate-900 mb-8 leading-relaxed font-outfit tracking-tight">
                                     {q.text}
                                 </h3>
 
@@ -181,24 +195,24 @@ export default function QuizPage() {
                                                 whileTap={!showResults ? { scale: 0.995 } : {}}
                                                 className={cn(
                                                     "w-full text-left p-4 pr-6 rounded-2xl border transition-all duration-300 flex items-center justify-between",
-                                                    !showResults && !isSelected && "border-slate-100 bg-white/40 hover:border-primary/30 hover:bg-white text-slate-600",
+                                                    !showResults && !isSelected && "border-slate-100 bg-white/40 hover:border-primary/30 hover:bg-white text-slate-800",
                                                     !showResults && isSelected && "border-primary bg-primary/5 text-slate-900 font-semibold ring-2 ring-primary/20",
                                                     isCorrect && "border-green-500 bg-green-50 text-green-700 ring-4 ring-green-500/10",
                                                     isWrongSelection && "border-red-300 bg-red-50 text-red-600 ring-4 ring-red-500/5",
-                                                    showResults && !isCorrect && !isWrongSelection && "border-slate-50 bg-slate-50/50 text-slate-400 opacity-60",
+                                                    showResults && !isCorrect && !isWrongSelection && "border-slate-50 bg-slate-50/50 text-slate-500 opacity-60",
                                                     showResults ? "cursor-default" : "cursor-pointer"
                                                 )}
                                             >
                                                 <div className="flex items-center gap-4">
                                                     <div className={cn(
-                                                        "w-8 h-8 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all font-bold text-sm",
-                                                        isSelected && !showResults ? "border-primary bg-primary text-white" : "border-slate-100 bg-slate-50 text-slate-400",
+                                                        "w-8 h-8 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all font-black text-sm",
+                                                        isSelected && !showResults ? "border-primary bg-primary text-white" : "border-slate-200 bg-slate-50 text-slate-500",
                                                         isCorrect && "border-green-500 bg-green-500 text-white",
                                                         isWrongSelection && "border-red-500 bg-red-500 text-white"
                                                     )}>
                                                         {String.fromCharCode(65 + optIndex)}
                                                     </div>
-                                                    <span className="text-base">{option}</span>
+                                                    <span className="text-base font-bold">{option}</span>
                                                 </div>
                                                 {isCorrect && <CheckCircle2 className="w-5 h-5 text-green-500 animate-in zoom-in-50 duration-500" />}
                                             </motion.button>
@@ -218,7 +232,7 @@ export default function QuizPage() {
                                                 <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
                                                 <div className="text-sm">
                                                     <span className="font-bold text-slate-900 block mb-1">Explanation</span>
-                                                    <p className="text-slate-500 font-medium leading-relaxed">{q.explanation}</p>
+                                                    <p className="text-slate-900 font-semibold leading-relaxed">{q.explanation}</p>
                                                 </div>
                                             </div>
                                         </motion.div>
