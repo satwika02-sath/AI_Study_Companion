@@ -73,7 +73,14 @@ async def startup_event():
 # Allow the Next.js dev server (port 3000) to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000", 
+        "http://localhost:3001", 
+        "http://127.0.0.1:3001",
+        "https://workshop-project.vercel.app",
+        "https://ai-study-companion.vercel.app" # Placeholder for user's actual domain
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
