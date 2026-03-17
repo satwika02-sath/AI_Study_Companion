@@ -62,21 +62,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Deployment Helper: Write Firebase Service Account JSON from Environment Variable
-firebase_json_env = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
-firebase_json_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json")
-
-if firebase_json_env and not os.path.exists(firebase_json_path):
-    print(f"[Server] Writing Firebase Service Account JSON from environment variable to {firebase_json_path}...")
-    try:
-        import json
-        # Ensure it's valid JSON
-        json_data = json.loads(firebase_json_env)
-        with open(firebase_json_path, "w") as f:
-            json.dump(json_data, f)
-        print("[Server] Successfully wrote Firebase Service Account file.")
-    except Exception as e:
-        print(f"[Server] Error writing Firebase Service Account file: {e}")
 
 @app.on_event("startup")
 async def startup_event():

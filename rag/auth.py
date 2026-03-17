@@ -1,4 +1,5 @@
 import os
+import json
 import firebase_admin
 from firebase_admin import credentials, auth
 from fastapi import HTTPException, Security, Depends
@@ -11,17 +12,32 @@ class User(BaseModel):
     email: Optional[str] = None
     name: Optional[str] = None
 
+# ---------------------------------------------------------------------------
+# Deployment Helper: Write Firebase Service Account JSON from Environment Variable
+# ---------------------------------------------------------------------------
+firebase_json_env = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+firebase_json_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json")
+
+if firebase_json_env and not os.path.exists(firebase_json_path):
+    print(f"[Auth] Detected FIREBASE_SERVICE_ACCOUNT_JSON. Writing to {firebase_json_path}...")
+    try:
+        # Ensure it's valid JSON
+        json_data = json.loads(firebase_json_env)
+        with open(firebase_json_path, "w") as f:
+            json.dump(json_data, f)
+        print("[Auth] Successfully wrote Firebase Service Account file.")
+    except Exception as e:
+        print(f"[Auth] Error writing Firebase Service Account file: {e}")
+
+# ---------------------------------------------------------------------------
 # Initialize Firebase Admin
-# It's better to do this once. We'll look for the service account file.
-# If not found, we'll try to initialize with default credentials.
+# ---------------------------------------------------------------------------
 try:
     if not firebase_admin._apps:
-        # Default to firebase-service-account.json in the root if not specified
-        cred_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json")
-        if os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
+        if os.path.exists(firebase_json_path):
+            cred = credentials.Certificate(firebase_json_path)
             firebase_admin.initialize_app(cred)
-            print(f"[Auth] Firebase Admin initialized with {cred_path}")
+            print(f"[Auth] Firebase Admin initialized with {firebase_json_path}")
         else:
             # Fallback to default or environment variables if any
             firebase_admin.initialize_app()
