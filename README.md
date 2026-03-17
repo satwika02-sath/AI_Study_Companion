@@ -1,25 +1,82 @@
-# AI Study Companion
+# AI Student Companion 🧠✨
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+A powerful, agentic AI study platform designed to transform your learning experience. This application uses a Multi-Agent System (MAS) and Retrieval-Augmented Generation (RAG) to provide an intelligent tutor, quiz generator, and flashcard creator.
 
-## Features
-- **AI Tutor**: Real-time study assistant for your notes.
-- **Dynamic Flashcards**: Flip-card deck created from your context.
-- **Interactive Quizzes**: Generate MCQs on any study topic.
-- **Repo Explainer**: Analyze and search GitHub repositories.
-- **Knowledge Base**: Local vector indexing with FAISS.
+## 🚀 Key Features
 
-## Getting Started
-First, run the development server:
+- **🎓 Agentic AI Tutor**: Get clear, accurate explanations for any topic. The tutor leverages both your uploaded study materials and its own general knowledge.
+- **📚 Topic-Based Flashcards**: Generate powerful active-recall flashcards simply by entering a topic. No notes required!
+- **📝 Smart MCQ Quizzes**: Create challenging multiple-choice questions on any subject to test your knowledge.
+- **📂 Repository Explainer**: Clone and analyze entire GitHub repositories. Perform semantic searches over codebases to understand complex logic.
+- **🔍 Intelligent RAG Pipeline**: High-performance local vector indexing using **FAISS** for fast and private document retrieval.
 
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Styling**: Vanilla CSS with a premium, modern aesthetic
+- **Icons**: Lucide React
+- **Animations**: Framer Motion
+- **Authentication**: Firebase Auth
+
+### Backend
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
+- **AI Orchestration**: LangChain & Custom Multi-Agent System
+- **LLM**: Gemini / OpenAI (via OpenRouter)
+- **Vector Store**: FAISS
+- **OCR**: Tesseract OCR (for image processing)
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Prerequisites
+- Node.js (v18+)
+- Python (3.9+)
+- Tesseract OCR (installed on your system PATH)
+
+### 2. Environment Setup
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# AI Configuration
+AI_API_KEY=your_openrouter_or_gemini_key
+OPENROUTER_MODEL=openai/gpt-3.5-turbo
+
+# Firebase Frontend
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+
+# Backend Connection
+RAG_BACKEND_URL=http://localhost:8000
+```
+
+### 3. Backend Setup
 ```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the server
+python server.py
+```
+*Note: Ensure you have `firebase-service-account.json` in the root for authenticated backend access.*
+
+### 4. Frontend Setup
+```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-And start the Python backend:
+Open [http://localhost:3000](http://localhost:3000) with your browser to start studying!
 
-```bash
-python server.py
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔒 Security Note
+This project uses Firebase Authentication. Backend endpoints are secured via JWT token verification. Ensure your Service Account credentials are kept private and never committed to version control.
