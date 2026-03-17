@@ -48,3 +48,9 @@ uploads/
 faiss_index/mock-user/
 repo_index/mock-user/
 test_results.txt
+
+# Firebase
+firebase-service-account.json
+
+# Build files
+tsconfig.tsbuildinfo
