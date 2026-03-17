@@ -81,7 +81,7 @@ export default function FlashcardsPage() {
             <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center mb-8 gap-6 pt-4">
                 <div>
                     <h2 className="text-3xl font-black tracking-tight text-slate-900 font-outfit">Flashcards</h2>
-                    <p className="text-slate-700 mt-1 font-bold">Generate custom cards from your study notes.</p>
+                    <p className="text-slate-700 mt-1 font-bold">Generate custom cards regarding the topic you need.</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
@@ -221,7 +221,7 @@ export default function FlashcardsPage() {
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 mb-3">Your Deck is Empty</h3>
                         <p className="text-slate-500 leading-relaxed font-medium">
-                            Enter a topic above and let our AI transform your study notes into powerful active-recall flashcards.
+                            Enter a topic above and let our AI transform it into powerful active-recall flashcards.
                         </p>
                     </div>
                 )}

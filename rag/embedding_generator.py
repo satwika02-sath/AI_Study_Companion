@@ -13,7 +13,8 @@ Default model: sentence-transformers/all-MiniLM-L6-v2
 """
 
 import os
-from typing import List, Optional
+from typing import List, Optional, Any
+from pydantic import SecretStr
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
@@ -25,12 +26,12 @@ from langchain_core.documents import Document
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 # Module-level singleton so the model is only loaded once per process
-_embedding_model: Optional[HuggingFaceEmbeddings] = None
+_embedding_model: Optional[Any] = None
 
 
 def get_embedding_model(
     model_name: str = DEFAULT_EMBEDDING_MODEL,
-) -> any:  # Type can be HuggingFaceEmbeddings or OpenAIEmbeddings
+) -> Any:  # Type can be HuggingFaceEmbeddings or OpenAIEmbeddings
     """
     Return a cached embedding model instance.
     Prioritizes OpenRouter API embeddings in production to save memory.
@@ -39,13 +40,19 @@ def get_embedding_model(
 
     if _embedding_model is None:
         api_key = os.getenv("AI_API_KEY")
-        # If we have an API key and are on Render/Production, use OpenRouter embeddings
+        
+        # Decide whether to use API or Local embeddings
+        # Use API if: RENDER env is set, or if user specifically wants it, or as a late fallback
+        use_api = False
         if api_key and os.getenv("RENDER"):
+            use_api = True
+        
+        if use_api:
             print("[EmbeddingGenerator] Initializing API embeddings via OpenRouter (text-embedding-3-small) …")
             _embedding_model = OpenAIEmbeddings(
                 model="openai/text-embedding-3-small", # OpenRouter compatible
-                openai_api_key=api_key,
-                openai_api_base="https://openrouter.ai/api/v1"
+                api_key=SecretStr(api_key) if api_key else None,
+                base_url="https://openrouter.ai/api/v1"
             )
         else:
             print(f"[EmbeddingGenerator] Initializing Local embeddings: '{model_name}' …")
@@ -53,9 +60,17 @@ def get_embedding_model(
                 _embedding_model = HuggingFaceEmbeddings(
                     model_name=model_name,
                 )
-            except ImportError:
-                print("[EmbeddingGenerator] ERROR: torch/sentence-transformers missing. Fallback to API required.")
-                raise RuntimeError("Local embeddings failed. Ensure torch is installed or provide AI_API_KEY.")
+            except (ImportError, RuntimeError, Exception) as e:
+                print(f"[EmbeddingGenerator] Local embeddings failed: {e}")
+                if api_key:
+                    print("[EmbeddingGenerator] Falling back to API embeddings as local dependencies are missing.")
+                    _embedding_model = OpenAIEmbeddings(
+                        model="openai/text-embedding-3-small",
+                        api_key=SecretStr(api_key) if api_key else None,
+                        base_url="https://openrouter.ai/api/v1"
+                    )
+                else:
+                    raise RuntimeError("Local embeddings failed and no AI_API_KEY provided for fallback.")
         
         print("[EmbeddingGenerator] Model initialized successfully.")
 

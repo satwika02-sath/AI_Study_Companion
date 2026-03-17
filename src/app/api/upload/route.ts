@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const RAG_BACKEND_URL = process.env.RAG_BACKEND_URL ?? "http://localhost:8000";
+export const maxDuration = 60; // 60 seconds for long-running document ingestion
 
 /**
  * POST /api/upload
  * Proxies file uploads from the Next.js frontend to the Python RAG backend.
  */
 export async function POST(req: NextRequest) {
+  console.log("[API /upload] POST request received");
   try {
     const formData = await req.formData();
-
     const authHeader = req.headers.get("authorization");
+    console.log("[API /upload] Auth header present:", !!authHeader);
 
     // Forward the exact same multipart form to the Python server, including Auth
     const backendRes = await fetch(`${RAG_BACKEND_URL}/upload`, {

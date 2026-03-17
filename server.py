@@ -23,6 +23,12 @@ Run with:
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env.local if it exists (Next.js default)
+load_dotenv(".env.local")
+load_dotenv() # Also load standard .env if present
+
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # Fix Intel OpenMP crash on Windows
 
 import asyncio
@@ -44,6 +50,7 @@ from rag.rag_pipeline import (
     remove_document,
     get_stats,
 )
+from rag.embedding_generator import get_embedding_model
 from rag.repo_explainer import clone_and_index_repo, explain_repo_architecture, query_repo
 
 # ---------------------------------------------------------------------------
@@ -60,15 +67,20 @@ async def startup_event():
     """
     Validate that critical environment variables exist at startup.
     """
-    api_key = os.getenv("AI_API_KEY")
+    api_key = os.getenv("AI_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("\n" + "!"*60)
-        print("FATAL ERROR: AI_API_KEY is missing from environment variables.")
+        print("FATAL ERROR: AI_API_KEY (or GEMINI_API_KEY) is missing.")
         print("Please check your .env file and add AI_API_KEY=your_key")
         print("!"*60 + "\n")
-        # Forcing a graceful shutdown of the process by raising a SystemExit-like error 
-        # is complex in uvicorn's event loop, but get_llm will also raise a RuntimeError.
-        # We'll print a loud warning here.
+    
+    # Warm up embedding model to prevent first-time upload timeouts
+    print("[Server] Warming up embedding model...")
+    try:
+        get_embedding_model()
+        print("[Server] Embedding model ready.")
+    except Exception as e:
+        print(f"[Server] Warning: Could not warm up embedding model: {e}")
 
 # Allow the Next.js dev server (port 3000) to call this API
 app.add_middleware(
@@ -191,11 +203,13 @@ async def upload_files(
     supported = {".pdf", ".txt", ".docx", ".png", ".jpg", ".jpeg", ".bmp", ".tiff"}
 
     for upload in files:
-        suffix = "." + upload.filename.rsplit(".", 1)[-1].lower() if "." in upload.filename else ""
+        print(f"[Server] Upload hit: {upload.filename} (type: {upload.content_type}) User: {user.uid}", flush=True)
+        filename = upload.filename or "uploaded_file"
+        suffix = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
         if suffix not in supported:
             raise HTTPException(
                 status_code=400,
-                detail=f"Unsupported file type '{suffix}' for '{upload.filename}'. "
+                detail=f"Unsupported file type '{suffix}' for '{filename}'. "
                        f"Supported: {supported}",
             )
 
@@ -203,7 +217,7 @@ async def upload_files(
 
         try:
             # 1. Save and get path
-            file_path = ingest_uploaded_bytes(file_bytes, upload.filename, save_original=True, user_id=user.uid)
+            file_path = ingest_uploaded_bytes(file_bytes, filename, save_original=True, user_id=user.uid)
             # 2. Agentic Ingestion (Async)
             result = await ingest_file(file_path, user_id=user.uid)
             
@@ -219,6 +233,11 @@ async def upload_files(
             
             results.append(UploadResult(**result))
         except Exception as e:
+            import traceback
+            error_msg = f"[Server] Error processing '{upload.filename}':\n{traceback.format_exc()}"
+            print(error_msg)
+            with open("server_error.log", "a") as log_file:
+                log_file.write(error_msg + "\n" + "="*40 + "\n")
             raise HTTPException(status_code=500, detail=f"Failed to process '{upload.filename}': {e}")
 
     return results
@@ -257,7 +276,7 @@ async def ask_ai_tutor(req: ChatRequest, user: User = Depends(get_current_user))
     """
     Retrieve relevant study material and generate an explanation via MAS.
     """
-    cache_key = get_cache_key("ask", req.dict(), user.uid)
+    cache_key = get_cache_key("ask", req.model_dump(), user.uid)
     if cache_key in _result_cache:
         print("[Server] Returning cached ASK response.")
         return ChatResponse(**_result_cache[cache_key])
@@ -285,7 +304,7 @@ async def ask_ai_endpoint(req: ChatRequest, user: User = Depends(get_current_use
 @app.post("/quiz")
 async def generate_quiz_endpoint(req: TopicRequest, user: User = Depends(get_current_user)):
     """Generate 5 MCQs based on a specific topic via Assessment Agent."""
-    cache_key = get_cache_key("quiz", req.dict(), user.uid)
+    cache_key = get_cache_key("quiz", req.model_dump(), user.uid)
     if cache_key in _result_cache:
         print("[Server] Returning cached QUIZ response.")
         return _result_cache[cache_key]
@@ -307,7 +326,7 @@ async def generate_quiz_alias(req: TopicRequest, user: User = Depends(get_curren
 @app.post("/flashcards")
 async def generate_flashcards_endpoint(req: TopicRequest, user: User = Depends(get_current_user)):
     """Generate flashcards via Assessment Agent."""
-    cache_key = get_cache_key("flashcards", req.dict(), user.uid)
+    cache_key = get_cache_key("flashcards", req.model_dump(), user.uid)
     if cache_key in _result_cache:
         print("[Server] Returning cached FLASHCARDS response.")
         return _result_cache[cache_key]

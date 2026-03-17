@@ -21,12 +21,8 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "AIzaSyDummyKey1234567890") {
-        router.push('/dashboard');
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        router.push('/dashboard');
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
     } finally {

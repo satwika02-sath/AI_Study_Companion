@@ -1,0 +1,22 @@
+c:\AI_Student_Companion\rag\embedding_generator.py
+  c:\AI_Student_Companion\rag\embedding_generator.py:28:28 - error: Expected class but received "(iterable: Iterable[object], /) -> bool" (reportGeneralTypeIssues)
+  c:\AI_Student_Companion\rag\embedding_generator.py:33:6 - error: Expected class but received "(iterable: Iterable[object], /) -> bool" (reportGeneralTypeIssues)
+  c:\AI_Student_Companion\rag\embedding_generator.py:53:25 - error: Argument of type "str | None" cannot be assigned to parameter "api_key" of type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None" in function "__init__"
+    Type "str | None" is not assignable to type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None"
+      Type "str" is not assignable to type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None"
+        "str" is not assignable to "SecretStr"
+        "str" is not assignable to "None"
+        Type "str" is not assignable to type "() -> str"
+        Type "str" is not assignable to type "() -> Awaitable[str]" (reportArgumentType)
+  c:\AI_Student_Companion\rag\embedding_generator.py:68:33 - error: Argument of type "str" cannot be assigned to parameter "api_key" of type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None" in function "__init__"
+    Type "str" is not assignable to type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None"
+      "str" is not assignable to "SecretStr"
+      "str" is not assignable to "None"
+      Type "str" is not assignable to type "() -> str"
+      Type "str" is not assignable to type "() -> Awaitable[str]" (reportArgumentType)
+c:\AI_Student_Companion\rag\vector_store.py
+  c:\AI_Student_Companion\rag\vector_store.py:186:36 - error: Cannot access attribute "_dict" for class "Docstore"
+    Attribute "_dict" is unknown (reportAttributeAccessIssue)
+  c:\AI_Student_Companion\rag\vector_store.py:187:35 - error: Cannot access attribute "_dict" for class "Docstore"
+    Attribute "_dict" is unknown (reportAttributeAccessIssue)
+6 errors, 0 warnings, 0 informations

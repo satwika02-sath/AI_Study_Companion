@@ -328,7 +328,11 @@ export default function UploadPage() {
         fetchStats();
     }, [fetchStats]);
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
+    const onDrop = useCallback((acceptedFiles: File[], fileRejections: any[]) => {
+        console.log("[UploadPage] onDrop hit. Accepted:", acceptedFiles.length, "Rejected:", fileRejections.length);
+        if (fileRejections.length > 0) {
+            console.warn("[UploadPage] Files rejected:", fileRejections);
+        }
         setFileEntries((prev) => [
             ...prev,
             ...acceptedFiles
@@ -342,6 +346,7 @@ export default function UploadPage() {
         accept: { 
             "application/pdf": [".pdf"], 
             "text/plain": [".txt"],
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
             "image/png": [".png"],
             "image/jpeg": [".jpg", ".jpeg"],
             "image/bmp": [".bmp"],

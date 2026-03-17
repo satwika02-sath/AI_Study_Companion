@@ -101,7 +101,7 @@ export default function QuizPage() {
                 <div className="flex-1">
                     <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-3 font-outfit">AI Quiz Generator</h2>
                     <p className="text-[17px] text-slate-700 max-w-xl leading-relaxed font-black">
-                        Test your knowledge. Enter a topic to construct a personalized assessment based on your study materials.
+                        Test your knowledge. Enter a topic to construct a personalized assessment regarding the topic you need.
                     </p>
                     <div className="mt-8 flex gap-3 max-w-lg">
                         <div className="relative flex-1 group">
@@ -316,7 +316,7 @@ export default function QuizPage() {
                         </div>
                         <h3 className="text-3xl font-bold text-slate-900 mb-3 font-outfit">Ready to Test Your Knowledge?</h3>
                         <p className="text-slate-500 max-w-sm font-medium leading-relaxed">
-                            Once you enter a topic, our AI will scan your study materials and craft a unique assessment for you.
+                            Once you enter a topic, our AI will craft a unique assessment for you.
                         </p>
                     </div>
                 )}

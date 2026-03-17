@@ -54,13 +54,13 @@ def clone_and_index_repo(repo_url: str, user_id: Optional[str] = None) -> dict:
         return {"error": f"Failed to clone repo: {str(e)}"}
 
     # Use LangChain to load code files
-    # Note: LanguageParser handles code-specific splitting later
-    # We use GenericLoader with LanguageParser for supported extensions
     try:
+        # Specifically filter out log files and build artifacts to keep semantic search relevant
         loader = GenericLoader.from_filesystem(
             user_repo_dir,
             glob="**/*",
             suffixes=[".py", ".js", ".ts", ".tsx", ".md", ".txt"],
+            exclude=["**/flutter_verbose.txt", "**/*.log", "**/build/*", "**/node_modules/*", "**/.git/*"],
             parser=LanguageParser()
         )
         documents = loader.load()
@@ -172,7 +172,7 @@ async def explain_repo_architecture(repo_url: str, user_id: Optional[str] = None
         response = await llm.ainvoke(ARCHITECTURE_PROMPT)
         
         # Robust parsing
-        content = response.content if hasattr(response, 'content') else str(response)
+        content = str(response.content) if hasattr(response, 'content') else str(response)
         # Attempt to parse as JSON
         import json
         try:

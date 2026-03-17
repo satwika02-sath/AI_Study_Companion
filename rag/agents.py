@@ -117,47 +117,45 @@ class TutorAgent(BaseAgent):
 
 
 class QuizAgent(BaseAgent):
-    """Creates MCQ assessments from retrieved context or general knowledge."""
+    """Creates MCQ assessments primarily from the user's provided topic."""
     def __init__(self):
         super().__init__(
             name="Quiz Agent", 
             persona=(
-                "You are a strict academic assessment expert. Your job is to create highly accurate multiple-choice questions "
-                "based on the provided study material, or your general knowledge if the material is omitted/insufficient."
+                "You are an expert academic assessment creator. Your job is to create highly accurate, challenging, "
+                "and educational multiple-choice questions based strictly on the topic the user provides."
             )
         )
 
     async def generate(self, context: str = "", topic: str = "General Topic") -> Dict[str, Any]:
         prompt = (
-            "Generate exactly 5 high-quality, relevant multiple-choice questions based on the topic below.\n"
-            "If 'Material' is provided and relevant, use it to form the questions. Otherwise, rely on your general knowledge.\n\n"
+            "Generate exactly 5 high-quality, relevant multiple-choice questions based specifically on the topic below.\n"
+            "Use your vast general knowledge to create the most educational and relevant questions possible for this topic.\n\n"
             "{format_instructions}\n\n"
-            "Topic: {topic}\n\n"
-            "Material (Optional):\n{context}"
+            "Topic: {topic}\n"
         )
-        return await self._call_llm(prompt, {"context": context, "topic": topic}, parser=JsonOutputParser(pydantic_object=QuizResponse))
+        return await self._call_llm(prompt, {"topic": topic}, parser=JsonOutputParser(pydantic_object=QuizResponse))
 
 
 class FlashcardAgent(BaseAgent):
-    """Generates study flashcards from context or general knowledge."""
+    """Generates study flashcards strictly from the user's provided topic."""
     def __init__(self):
         super().__init__(
             name="Flashcard Agent", 
             persona=(
-                "You are an expert memory specialist. Your task is to extract factual, relevant key terms and concepts "
-                "from the provided material, or use your general knowledge, to create highly accurate flashcards."
+                "You are an expert memory specialist. Your task is to create highly accurate, bite-sized educational flashcards "
+                "based strictly on the topic the user provides."
             )
         )
 
     async def generate(self, context: str = "", topic: str = "General Topic") -> Dict[str, Any]:
         prompt = (
             "Create accurate, bite-sized educational flashcards (Front/Back format) on the topic below.\n"
-            "If 'Material' is provided and relevant, extract concepts from it. Otherwise, use your general knowledge.\n\n"
+            "Use your vast general knowledge to create the most educational and relevant flashcards possible for this topic.\n\n"
             "{format_instructions}\n\n"
-            "Topic: {topic}\n\n"
-            "Material (Optional):\n{context}"
+            "Topic: {topic}\n"
         )
-        return await self._call_llm(prompt, {"context": context, "topic": topic}, parser=JsonOutputParser(pydantic_object=FlashcardResponse))
+        return await self._call_llm(prompt, {"topic": topic}, parser=JsonOutputParser(pydantic_object=FlashcardResponse))
 
 
 # ─── Coordinator Agent ───────────────────────────────────────────────────────
@@ -181,11 +179,12 @@ class CoordinatorAgent:
         if suffix in SUPPORTED_IMAGE_EXTENSIONS:
             print(f"[Coordinator] Image detected ({suffix}), attempting OCR...")
             chunks = await self.ocr_agent.process(file_path)
-        
-        # 2. Otherwise use standard document loading
-        if not chunks:
-            if suffix in SUPPORTED_IMAGE_EXTENSIONS:
-                print(f"[Coordinator] OCR failed or returned no text for image.")
+            # If it's an image, we only use chunks from OCR.
+            # We don't want to fall through to doc_agent which would fail on images.
+            if not chunks:
+                print(f"[Coordinator] OCR returned no text for image.")
+        else:
+            # Standard document loading for non-images
             chunks = await self.doc_agent.ingest(file_path)
         
         # 3. Store in Vector Database (offloaded)
@@ -221,14 +220,12 @@ class CoordinatorAgent:
         }
 
     async def handle_quiz(self, topic: str, k: int = 5, user_id: Optional[str] = None) -> Dict[str, Any]:
-        docs = await self.retrieval_agent.search(topic, k=k, user_id=user_id)
-        context = "\n\n".join([d.page_content for d in docs])
-        quiz = await self.quiz_agent.generate(context, topic=topic)
-        quiz["sources"] = list(set([d.metadata.get("source_file") for d in docs])) if docs else []
+        # We now skip retrieval for quizzes; quizzes are strictly topic-based.
+        quiz = await self.quiz_agent.generate(context="", topic=topic)
+        quiz["sources"] = []
         return quiz
 
     async def handle_flashcards(self, topic: str, k: int = 5, user_id: Optional[str] = None) -> Dict[str, Any]:
-        docs = await self.retrieval_agent.search(topic, k=k, user_id=user_id)
-        context = "\n\n".join([d.page_content for d in docs])
-        cards = await self.flashcard_agent.generate(context, topic=topic)
+        # We now skip retrieval for flashcards; flashcards are strictly topic-based.
+        cards = await self.flashcard_agent.generate(context="", topic=topic)
         return cards

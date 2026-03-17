@@ -64,10 +64,10 @@ TUTOR_PROMPT = PromptTemplate.from_template(TUTOR_PROMPT_TEMPLATE)
 # --- Quiz Prompt ---
 QUIZ_PROMPT_TEMPLATE = """
 You are an expert educator.
-Generate exactly 5 multiple choice questions from the provided study material.
+Generate exactly 5 multiple choice questions on the requested topic.
 Each question must have 4 distinct options and one clear correct answer.
 
-Study Material:
+Topic/Context:
 {context}
 
 Format the output as a JSON object matching this schema:
@@ -193,7 +193,7 @@ def with_retry(max_retries: int = 3, initial_delay: float = 1.0):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             delay = initial_delay
-            last_err = None
+            last_err = Exception("Operation failed")
             
             for attempt in range(max_retries + 1):
                 try:
@@ -222,21 +222,40 @@ def with_retry(max_retries: int = 3, initial_delay: float = 1.0):
 
 # ─── Global LLM Cache ────────────────────────────────────────────────────────
 _llm_cache = {}
+_last_loop_id = None
 
 def get_llm(model_name: Optional[str] = None, temperature: float = 0.2):
     """
     Initialize and return a LangChain ChatModel.
     Standardized to use AI_API_KEY and OPENROUTER_MODEL from environment.
     """
+    global _llm_cache, _last_loop_id
+    
+    # Track the current event loop to avoid "Event loop is closed" errors
+    current_loop_id = None
+    try:
+        current_loop_id = id(asyncio.get_running_loop())
+    except RuntimeError:
+        pass
+
+    # If the loop has changed, clear the cache to force re-initialization
+    if current_loop_id != _last_loop_id:
+        _llm_cache = {}
+        _last_loop_id = current_loop_id
+
     # Prioritize: argument > env var > hardcoded default
     if not model_name:
         model_name = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-lite-preview-02-05:free")
     
     cache_key = (model_name, temperature)
+    
     if cache_key in _llm_cache:
         return _llm_cache[cache_key]
 
     api_key = os.getenv("AI_API_KEY")
+    
+    if not api_key:
+        api_key = os.getenv("GEMINI_API_KEY") # Fallback
     
     if not api_key:
         print("[LLMEngine] FATAL: Missing AI_API_KEY environment variable.")
@@ -245,13 +264,18 @@ def get_llm(model_name: Optional[str] = None, temperature: float = 0.2):
     print(f"[LLMEngine] Initializing OpenRouter model: {model_name}")
     llm = ChatOpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=api_key,
+        api_key=api_key, # type: ignore
         model=model_name,
         temperature=temperature,
     )
     
     _llm_cache[cache_key] = llm
     return llm
+
+def clear_llm_cache():
+    """Clear the global LLM cache. Useful for tests to avoid event loop issues."""
+    global _llm_cache
+    _llm_cache = {}
 
 
 # Note: The functions below are legacy wrappers. 

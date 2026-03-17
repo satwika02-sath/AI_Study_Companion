@@ -4,11 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=api_key)
+genai.configure(api_key=api_key) # type: ignore
 
 print("Listing available models:")
 try:
-    for m in genai.list_models():
+    for m in genai.list_models(): # type: ignore
         if 'generateContent' in m.supported_generation_methods:
             print(m.name)
 except Exception as e:

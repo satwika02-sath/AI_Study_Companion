@@ -155,7 +155,7 @@ def delete_document(
 
     # Get all doc IDs where source matches
     # Since we use metadata, we have to filter the internal dictionary
-    all_docs = store.docstore._dict
+    all_docs = getattr(store.docstore, "_dict", {})
     ids_to_del = [
         id_ for id_, doc in all_docs.items() 
         if doc.metadata.get("source_file") == source_file
@@ -183,8 +183,9 @@ def get_collection_stats(
     unique_files = set()
     
     if store:
-        count = len(store.docstore._dict)
-        for doc in store.docstore._dict.values():
+        _dict = getattr(store.docstore, "_dict", {})
+        count = len(_dict)
+        for doc in _dict.values():
             if "source_file" in doc.metadata:
                 unique_files.add(doc.metadata["source_file"])
 

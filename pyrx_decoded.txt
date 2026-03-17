@@ -1,0 +1,52 @@
+﻿c:\AI_Student_Companion\list_models.py
+  c:\AI_Student_Companion\list_models.py:7:7 - error: "configure" is not exported from module "google.generativeai" (reportPrivateImportUsage)
+  c:\AI_Student_Companion\list_models.py:11:20 - error: "list_models" is not exported from module "google.generativeai" (reportPrivateImportUsage)
+c:\AI_Student_Companion\rag\embedding_generator.py
+  c:\AI_Student_Companion\rag\embedding_generator.py:33:6 - error: Expected class but received "(iterable: Iterable[object], /) -> bool" (reportGeneralTypeIssues)
+  c:\AI_Student_Companion\rag\embedding_generator.py:51:32 - error: Type "OpenAIEmbeddings" is not assignable to declared type "HuggingFaceEmbeddings | None"
+  ┬á┬áType "OpenAIEmbeddings" is not assignable to type "HuggingFaceEmbeddings | None"
+  ┬á┬á┬á┬á"OpenAIEmbeddings" is not assignable to "HuggingFaceEmbeddings"
+  ┬á┬á┬á┬á"OpenAIEmbeddings" is not assignable to "None" (reportAssignmentType)
+  c:\AI_Student_Companion\rag\embedding_generator.py:53:17 - error: No parameter named "openai_api_key" (reportCallIssue)
+  c:\AI_Student_Companion\rag\embedding_generator.py:54:17 - error: No parameter named "openai_api_base" (reportCallIssue)
+  c:\AI_Student_Companion\rag\embedding_generator.py:66:40 - error: Type "OpenAIEmbeddings" is not assignable to declared type "HuggingFaceEmbeddings | None"
+  ┬á┬áType "OpenAIEmbeddings" is not assignable to type "HuggingFaceEmbeddings | None"
+  ┬á┬á┬á┬á"OpenAIEmbeddings" is not assignable to "HuggingFaceEmbeddings"
+  ┬á┬á┬á┬á"OpenAIEmbeddings" is not assignable to "None" (reportAssignmentType)
+  c:\AI_Student_Companion\rag\embedding_generator.py:68:25 - error: No parameter named "openai_api_key" (reportCallIssue)
+  c:\AI_Student_Companion\rag\embedding_generator.py:69:25 - error: No parameter named "openai_api_base" (reportCallIssue)
+c:\AI_Student_Companion\rag\llm_engine.py
+  c:\AI_Student_Companion\rag\llm_engine.py:219:19 - error: Invalid exception class or object
+  ┬á┬á"None" does not derive from BaseException (reportGeneralTypeIssues)
+  c:\AI_Student_Companion\rag\llm_engine.py:267:17 - error: Argument of type "str" cannot be assigned to parameter "api_key" of type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None" in function "__init__"
+  ┬á┬áType "str" is not assignable to type "SecretStr | (() -> str) | (() -> Awaitable[str]) | None"
+  ┬á┬á┬á┬á"str" is not assignable to "SecretStr"
+  ┬á┬á┬á┬á"str" is not assignable to "None"
+  ┬á┬á┬á┬áType "str" is not assignable to type "() -> str"
+  ┬á┬á┬á┬áType "str" is not assignable to type "() -> Awaitable[str]" (reportArgumentType)
+c:\AI_Student_Companion\rag\repo_explainer.py
+  c:\AI_Student_Companion\rag\repo_explainer.py:181:35 - error: Cannot access attribute "split" for class "list[str | dict[Unknown, Unknown]]"
+  ┬á┬áAttribute "split" is unknown (reportAttributeAccessIssue)
+  c:\AI_Student_Companion\rag\repo_explainer.py:183:35 - error: Cannot access attribute "split" for class "list[str | dict[Unknown, Unknown]]"
+  ┬á┬áAttribute "split" is unknown (reportAttributeAccessIssue)
+  c:\AI_Student_Companion\rag\repo_explainer.py:185:31 - error: Argument of type "str | Unknown | list[str | dict[Unknown, Unknown]]" cannot be assigned to parameter "s" of type "str | bytes | bytearray" in function "loads"
+  ┬á┬áType "str | Unknown | list[str | dict[Unknown, Unknown]]" is not assignable to type "str | bytes | bytearray"
+  ┬á┬á┬á┬áType "list[str | dict[Unknown, Unknown]]" is not assignable to type "str | bytes | bytearray"
+  ┬á┬á┬á┬á┬á┬á"list[str | dict[Unknown, Unknown]]" is not assignable to "str"
+  ┬á┬á┬á┬á┬á┬á"list[str | dict[Unknown, Unknown]]" is not assignable to "bytes"
+  ┬á┬á┬á┬á┬á┬á"list[str | dict[Unknown, Unknown]]" is not assignable to "bytearray" (reportArgumentType)
+c:\AI_Student_Companion\rag\vector_store.py
+  c:\AI_Student_Companion\rag\vector_store.py:158:31 - error: Cannot access attribute "_dict" for class "Docstore"
+  ┬á┬áAttribute "_dict" is unknown (reportAttributeAccessIssue)
+  c:\AI_Student_Companion\rag\vector_store.py:186:36 - error: Cannot access attribute "_dict" for class "Docstore"
+  ┬á┬áAttribute "_dict" is unknown (reportAttributeAccessIssue)
+  c:\AI_Student_Companion\rag\vector_store.py:187:35 - error: Cannot access attribute "_dict" for class "Docstore"
+  ┬á┬áAttribute "_dict" is unknown (reportAttributeAccessIssue)
+c:\AI_Student_Companion\server.py
+  c:\AI_Student_Companion\server.py:207:40 - error: "rsplit" is not a known attribute of "None" (reportOptionalMemberAccess)
+  c:\AI_Student_Companion\server.py:207:70 - error: Operator "in" not supported for types "Literal['.']" and "str | None"
+  ┬á┬áOperator "in" not supported for types "Literal['.']" and "None" (reportOperatorIssue)
+  c:\AI_Student_Companion\server.py:219:59 - error: Argument of type "str | None" cannot be assigned to parameter "file_name" of type "str" in function "ingest_uploaded_bytes"
+  ┬á┬áType "str | None" is not assignable to type "str"
+  ┬á┬á┬á┬á"None" is not assignable to "str" (reportArgumentType)
+20 errors, 0 warnings, 0 informations
