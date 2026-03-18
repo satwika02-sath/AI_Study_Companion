@@ -13,6 +13,7 @@ faiss-cpu>=1.7.4
 
 # -- PDF & Image Parsing (OCR) ------------------------------------------------
 pypdf>=4.0.0
+docx2txt>=0.8
 pytesseract>=0.3.10
 Pillow>=10.0.0
 
@@ -28,6 +29,9 @@ google-generativeai>=0.7.0
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 python-multipart>=0.0.9
+google-auth>=2.0.0
+urllib3>=2.0.0
+certifi>=2024.0.0
 
 # -- Utilities ----------------------------------------------------------------
 pydantic>=2.0.0

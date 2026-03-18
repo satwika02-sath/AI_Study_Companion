@@ -50,18 +50,40 @@ security = HTTPBearer()
 async def get_current_user(res: HTTPAuthorizationCredentials = Security(security)) -> User:
     """
     Verifies the Firebase ID token and returns the user object.
+    Includes a retry mechanism for transient SSL/Network errors (common on Windows).
     """
     token = res.credentials
-    try:
-        decoded_token = auth.verify_id_token(token)
-        return User(
-            uid=decoded_token.get("uid"),
-            email=decoded_token.get("email"),
-            name=decoded_token.get("name")
-        )
-    except Exception as e:
-        print(f"[Auth] Token verification failed: {e}")
-        raise HTTPException(
-            status_code=401,
-            detail=f"Invalid or expired authentication token: {str(e)}"
-        )
+    max_retries = 3
+    last_error = None
+
+    for attempt in range(max_retries):
+        try:
+            decoded_token = auth.verify_id_token(token)
+            return User(
+                uid=decoded_token.get("uid"),
+                email=decoded_token.get("email"),
+                name=decoded_token.get("name")
+            )
+        except Exception as e:
+            last_error = e
+            error_str = str(e).lower()
+            # If it's a transient SSL/EOF error, we retry.
+            if "unexpected_eof" in error_str or "eof occurred in violation of protocol" in error_str or "connection aborted" in error_str:
+                print(f"[Auth] Transient SSL error on attempt {attempt + 1}/{max_retries}. Retrying...")
+                import asyncio
+                await asyncio.sleep(0.5 * (attempt + 1)) # Exponential backoff
+                continue
+            
+            # For other errors (invalid token, expired), we raise immediately
+            print(f"[Auth] Token verification failed: {e}")
+            raise HTTPException(
+                status_code=401,
+                detail=f"Invalid or expired authentication token: {str(e)}"
+            )
+
+    # If we exhausted retries
+    print(f"[Auth] Token verification failed after {max_retries} attempts: {last_error}")
+    raise HTTPException(
+        status_code=401,
+        detail=f"Authentication failed due to persistent network/SSL issues: {str(last_error)}"
+    )

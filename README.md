@@ -17,7 +17,7 @@ A powerful, agentic AI study platform designed to transform your learning experi
 - **Styling**: Vanilla CSS with a premium, modern aesthetic
 - **Icons**: Lucide React
 - **Animations**: Framer Motion
-- **Authentication**: Firebase Auth
+- **Authentication**: Firebase Auth (with robust Windows SSL retry logic)
 
 ### Backend
 - **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
@@ -36,7 +36,10 @@ A powerful, agentic AI study platform designed to transform your learning experi
 - Tesseract OCR (installed on your system PATH)
 
 ### 2. Environment Setup
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env.local` file in the root directory with the following variables. 
+
+> [!TIP]
+> Use `http://localhost:8000` for `RAG_BACKEND_URL` during local development.
 
 ```env
 # AI Configuration
@@ -80,3 +83,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to start s
 
 ## 🔒 Security Note
 This project uses Firebase Authentication. Backend endpoints are secured via JWT token verification. Ensure your Service Account credentials are kept private and never committed to version control.
+
+---
+
+## 🛠️ Troubleshooting
+
+### SSL Errors (Windows)
+If you encounter `UNEXPECTED_EOF_WHILE_READING` errors during authentication, the backend now includes an automatic retry mechanism to handle these transient network blips.
+
+### Upload Failures
+Ensure `docx2txt` is installed in your Python environment for `.docx` support. This is included in `requirements.txt`.
